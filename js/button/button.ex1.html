@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="dist/bundle.js"></script>
+        <style>
+            ms\:button input{
+                display: none; 
+            }
+        </style>
+    </head>
+    <body ms-controller="test">
+
+    <ms:button>Primary</ms:button>
+    <ms:button color="secondary">Secondary</ms:button>
+    <ms:button color="success">Success</ms:button>
+    <ms:button color="warning">Warning</ms:button>
+    <ms:button color="danger">Danger</ms:button>
+    <ms:button color="link">Link</ms:button>
+    <hr/>
+    <ms:button outline="true">Primary</ms:button>
+    <ms:button color="secondary" outline="true">Secondary</ms:button>
+    <ms:button color="success" outline="true">Success</ms:button>
+    <ms:button color="warning" outline="true">Warning</ms:button>
+    <ms:button color="danger" outline="true">Danger</ms:button>
+    <hr/>
+    <ms:button size="lg">Large Button</ms:button>
+    <ms:button color="secondary" size="sm">Small Button</ms:button>
+    <hr/>
+    <ms:button block="true">Block level button</ms:button>
+    <ms:button color="secondary" block="true">Block level button</ms:button>
+    <hr/>
+    <ms:button active="true">active</ms:button>
+    <ms:button >no active</ms:button>
+    <ms:button disabled="true">disabled</ms:button>
+    <ms:button color="secondary" disabled="true">disabled</ms:button>
+    <ms:button color="secondary" >no disabled</ms:button>
+    <hr/>
+    <ms:button data-toggle="button" >Single toggle</ms:button>
+    <hr/>
+
+    <div class="btn-group" data-toggle="buttons">
+        <ms:button active="true">
+            <input type="checkbox" checked autocomplete="off"> Checkbox 1 (pre-checked)
+        </ms:button>
+        <ms:button>
+            <input type="checkbox" autocomplete="off"> Checkbox 2
+        </ms:button>
+        <ms:button>
+            <input type="checkbox" autocomplete="off"> Checkbox 3
+        </ms:button>
+    </div>
+    <div class="btn-group" data-toggle="buttons">
+        <ms:button active="true">
+            <input type="radio" checked autocomplete="off"> Radio 1 (pre-checked)
+        </ms:button>
+        <ms:button>
+            <input type="radio" autocomplete="off"> Radio 2
+        </ms:button>
+        <ms:button>
+            <input type="radio" autocomplete="off"> Radio 3
+        </ms:button>
+    </div>
+</body>
+</html>
