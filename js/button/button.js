@@ -1,5 +1,4 @@
-require("avalon")
-
+var avalon = require("avalon")
 
 avalon.component("ms:button", {
     color: "primary", //primary secondary success warning danger link
