@@ -1,6 +1,11 @@
 var avalon = require("avalon")
 var dropdowns = []
 var backdrops = []
+var ClassName = {
+    BACKDROP: 'dropdown-backdrop',
+    DISABLED: 'disabled',
+    OPEN: 'open'
+}
 avalon.component("ms:dropdown", {
     $slot: "content",
     content: "",
@@ -24,7 +29,7 @@ avalon.component("ms:dropdown", {
         event.preventDefault()
         event.stopPropagation()
 
-        if (target.disabled || avalon(target).hasClass("disabled")) {//toggleElement
+        if (target.disabled || avalon(target).hasClass(ClassName.DISABLED)) {//toggleElement
             return
         }
         var parent = getParent(target)
@@ -34,7 +39,7 @@ avalon.component("ms:dropdown", {
 
         var vm = parent["ms-dropdown-vm"]
 
-        var isActive = avalon(parent).hasClass("open")
+        var isActive = avalon(parent).hasClass(ClassName.OPEN)
 
         if (!isActive && event.which !== 27 || isActive && event.which === 27) {
             if (event.which === 27) {
@@ -72,10 +77,10 @@ avalon.component("ms:dropdown", {
             }
         }
 
-        if (event.which === 40 ) {
+        if (event.which === 40) {
             // down
             index++
-            if(index === items.length ){
+            if (index === items.length) {
                 index = 0
             }
         }
@@ -86,7 +91,7 @@ avalon.component("ms:dropdown", {
     },
     toggle: function (event) {
 
-        if (this.disabled || avalon(this).hasClass("disabled")) {
+        if (this.disabled || avalon(this).hasClass(ClassName.DISABLED)) {
             return false
         }
         var parent = getParent(this) //Dropdown._getParentFromElement(this);
@@ -103,7 +108,7 @@ avalon.component("ms:dropdown", {
         if ('ontouchstart' in document.documentElement) {
             // if mobile we use a backdrop because click events don't delegate
             var backdrop = document.createElement('div');
-            backdrop.className = "dropdown-backdrop"
+            backdrop.className = ClassName.BACKDROP
             backdrop.parentNode.insertBefore(dropdown, this)
             avalon(backdrop).bind('click', avalon.components["ms:dropdown"]._clearMenus)
             backdrops.push(backdrop)
@@ -159,7 +164,7 @@ avalon.component("ms:dropdown", {
 
         var dropdown = avalon(element)
         dropdown.addClass("dropdown")
-        dropdown.toggleClass("open", vm.open)
+        dropdown.toggleClass(ClassName.OPEN, vm.open)
         //----------
         var children = element.children, btn, menu
         for (var i = 0, el; el = children[i++]; ) {
@@ -180,20 +185,20 @@ avalon.component("ms:dropdown", {
         btn.addClass("dropdown-toggle")
         btn.attr("data-toggle", "dropdown")
         btn.attr("aria-haspopup", "true")
-
-        vm.$watch("open", function (a) {
-            dropdown.toggleClass("open", a)
+        vm.$watch(ClassName.OPEN, function (a) {
+            dropdown.toggleClass(ClassName.OPEN, a)
             dropdown.attr("aria-expanded", a)
             if (a) {
-                element.setAttribute("open", true)
+                element.setAttribute(ClassName.OPEN, true)
             } else {
-                element.removeAttribute("open")
+                element.removeAttribute(ClassName.OPEN)
             }
         })
         //---------------
         menu.attr("role", "menu")
         menu.addClass("dropdown-menu")
         menu.css("top", btn[0].offsetHeight)//hack bootstrap v4
+
         if (vm.menuRight) {
             menu.addClass("dropdown-menu-right")
         }
