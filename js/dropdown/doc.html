@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>dropdown</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="dist/bundle.js"></script>
+        <style>
+            ms\:button input{
+                display: none; 
+            }
+            body{
+                padding:2em
+            }
+        </style>
+    </head>
+    <body ms-controller="test">
+        <p>&lt;ms:dropdown&gt;要求其必须有两个子元素</p>
+        <p>第一个为按钮,ms:button或原生的button, 框架给它dropdown类名,如果其存在open属性,那么也添加open类名,
+            然后加上data-toggle="dropdown"属性.</p>
+        <p>第二个元素为菜单容器,建议用div,框架给它加上dropdown-menu类名</p>
+        <p>菜单下有三种元素,一种是a元素或button元素,框架给它们加上dropdown-item类名</p>
+        <p>第二种为强调用的title, 是h6元素, 框架给它们加上dropdown-header类名,它们还能添加disabled类名表示禁用.</p>
+        <p>第三种为分隔线, 是div元素, 框架给它们加上dropdown-divider类名</p>
+        <p>如果菜单的子元素已经添加了dropdown-*类名,那么框架就不会添加</p>
+    <xmp>
+        &lt;ms:dropdown open='true'&gt;
+        &lt;ms:button color='secondary'&gt;
+        Dropdown
+        &lt;/ms:button&gt;
+        &lt;div&gt;
+        &lt;button type="button"&gt;Action&lt;/button&gt;
+        &lt;button type="button"&gt;Another action&lt;/button&gt;
+        &lt;button type="button"&gt;Something else here&lt;/button&gt;
+        &lt;/div&gt;
+        &lt;/ms:dropdown&gt;
+    </xmp>
+    <div style="height:120px;">
+        <ms:dropdown open='true'>
+            <ms:button color='secondary'>
+                Dropdown
+            </ms:button>
+            <div>
+                <button type="button">Action</button>
+                <button type="button">Another action</button>
+                <button type="button">Something else here</button>
+            </div>
+        </ms:dropdown>
+
+    </div>
+</body>
+</html>
+
+

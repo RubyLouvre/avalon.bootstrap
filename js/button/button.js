@@ -1,4 +1,4 @@
-var avalon = require("avalon")
+var avalon = require("../focusin/focusin")
 
 avalon.component("ms:button", {
     color: "primary", //primary secondary success warning danger link
@@ -92,46 +92,17 @@ function delegate(event, other) {
 }
 avalon(document).bind("click", delegate)
 
-
-avalon.ready(function () {
-    var supportFocusin = !!document.body.attachEvent
-    if (!supportFocusin) {
-        function swap() {
-            supportFocusin = true
-        }
-        var a = document.createElement('a') // create test element
-        a.style.visibility = "hidden"
-        a.href = "#" // to make it focusable
-        a.addEventListener('focusin', swap, false); // bind focusin
-        document.body.appendChild(a) // append
-        a.focus() // focus
-        document.body.removeChild(a) // remove again
-    }
-
-    if (!supportFocusin) {
-        avalon.log("当前浏览器不支持focusin")
-        avalon.each({
-            focusin: "focus",
-            focusout: "blur"
-        }, function (origType, fixType) {
-            avalon.eventHooks[origType] = {
-                type: fixType,
-                phase: true
-            }
-        })
-    }
-    avalon(document).bind("focusin", function (event) {
-        delegate(event, function (button) {
-            avalon(button).addClass("focus")
-        })
+avalon(document).bind("focusin", function (event) {
+    delegate(event, function (button) {
+        avalon(button).addClass("focus")
     })
-    avalon(document).bind("focusout", function (event) {
-        delegate(event, function (button) {
-            avalon(button).removeClass("focus")
-        })
-    })
-
 })
+avalon(document).bind("focusout", function (event) {
+    delegate(event, function (button) {
+        avalon(button).removeClass("focus")
+    })
+})
+
 
 
 module.exports = avalon
