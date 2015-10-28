@@ -47,6 +47,8 @@
 	__webpack_require__(1)
 	__webpack_require__(2)
 	__webpack_require__(3)
+
+	__webpack_require__(4)
 	avalon.define({
 	    $id: "test"
 	})
@@ -6061,13 +6063,79 @@
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var avalon = __webpack_require__(1)
+
+	avalon.component("ms:inputgroup", {
+	    $slot: "content",
+	    content: "",
+	    $template: "{{before|html}}{{content|html}}{{after|html}}",
+	    size: "", //lg sm xs
+	    before: "",
+	    after: "",
+	    beforebtn: false,
+	    afterbtn: false,
+	    $dispose: function (vm, element) {
+	        element.innerHTML = ""
+	    },
+	    $ready: function (vm, element) {
+	        var btn = avalon(element)
+	        var input = element.getElementsByTagName("input")[0]
+	        if (input) {
+	            avalon(input).addClass("form-control")
+	        }
+
+	        if (vm.after) {
+	            if (!vm.afterbtn) {
+	                vm.afterbtn = /^\<(ms\:button|button)/.test(vm.after)
+	            }
+	            if (vm.afterbtn) {
+	                if (!/input-group-btn/.test(vm.after)) {
+	                    vm.after = '<span class="input-group-btn">' + vm.after + '</span>'
+	                }
+	            } else {
+	                if (!/input-group-addon/.test(vm.after)) {
+	                    vm.after = '<span class="input-group-addon">' + vm.after + '</span>'
+	                }
+	            }
+	        }
+	        if (vm.before) {
+	            if (!vm.beforebtn) {
+	                vm.beforebtn = /^\<(ms\:button|button)/.test(vm.before)
+	            }
+	            if (vm.beforebtn) {
+	                if (!/input-group-btn/.test(vm.before)) {
+	                    vm.before = '<span class="input-group-btn">' + vm.before + '</span>'
+	                }
+	            } else {
+	                if (!/input-group-addon/.test(vm.before)) {
+	                    vm.before = '<span class="input-group-addon">' + vm.before + '</span>'
+	                }
+	            }
+	        }
+
+	        btn.addClass("input-group")
+	        if (vm.size) {
+	            btn.addClass("input-group-" + vm.size)
+	        }
+	    }
+	})
+
+
+	module.exports = avalon
+	// 文档 http://v4-alpha.getbootstrap.com/components/buttons/
+	// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(4);
+	var content = __webpack_require__(5);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(6)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6084,10 +6152,10 @@
 	}
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(5)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -6098,7 +6166,7 @@
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports) {
 
 	/*
@@ -6154,7 +6222,7 @@
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*

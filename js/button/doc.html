@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="dist/bundle.js"></script>
+        <style>
+            ms\:button input{
+                display: none; 
+            }
+            body{
+                padding:2em
+            }
+        </style>
+    </head>
+    <body ms-controller="test">
+        <div>
+            <p>我们可以通过color属性定义其颜色,默认是primary</p>
+            <ms:button>Primary</ms:button>
+            <ms:button color="secondary">Secondary</ms:button>
+            <ms:button color="success">Success</ms:button>
+            <ms:button color="warning">Warning</ms:button>
+            <ms:button color="danger">Danger</ms:button>
+            <ms:button color="link">Link</ms:button>
+        </div>
+        <div>
+            <p>我们可以通过outlined布尔属性决定使用镂空效果,默认是false</p>
+            <ms:button outline="true">Primary</ms:button>
+            <ms:button color="secondary" outline="true">Secondary</ms:button>
+            <ms:button color="success" outline="true">Success</ms:button>
+            <ms:button color="warning" outline="true">Warning</ms:button>
+            <ms:button color="danger" outline="true">Danger</ms:button>
+        </div>
+
+        <div>
+            <p>我们可以通过size属性来调整大小,不写为正常尺寸,lg为大,sm为小</p>
+            <ms:button size="lg">Large Button</ms:button>
+            <ms:button color="secondary" size="sm">Small Button</ms:button>
+        </div>
+
+        <div>
+            <p>我们可以通过block布尔属性决定是否占满一行,默认为false</p>
+            <ms:button block="true">Block level button</ms:button>
+            <ms:button color="secondary" block="true">Block level button</ms:button>
+        </div>
+
+        <div>
+            <p>我们可以通过active, disabled布尔属性决定其状态, active可以在点击时改变状态</p>
+            <ms:button active="true">active</ms:button>
+            <ms:button >no active</ms:button>
+            <ms:button disabled="true">disabled</ms:button>
+            <ms:button color="secondary" disabled="true">disabled</ms:button>
+            <ms:button color="secondary" >no disabled</ms:button>
+        </div>
+        <div>
+            <p>在点击时,我们可以判定其包含的input,实现复选与单选效果.</p>
+            <ms:button data-toggle="button">Single toggle</ms:button>
+            <div class="btn-group" data-toggle="buttons">
+                <ms:button active="true">
+                    <input type="checkbox" checked autocomplete="off"> Checkbox 1 (pre-checked)
+                </ms:button>
+                <ms:button>
+                    <input type="checkbox" autocomplete="off"> Checkbox 2
+                </ms:button>
+                <ms:button>
+                    <input type="checkbox" autocomplete="off"> Checkbox 3
+                </ms:button>
+            </div>
+            <br/>
+            <div class="btn-group" data-toggle="buttons">
+                <ms:button active="true">
+                    <input type="radio" checked autocomplete="off"> Radio 1 (pre-checked)
+                </ms:button>
+                <ms:button>
+                    <input type="radio" autocomplete="off"> Radio 2
+                </ms:button>
+                <ms:button>
+                    <input type="radio" autocomplete="off"> Radio 3
+                </ms:button>
+            </div>
+        </div>
+
+
+    </body>
+</html>

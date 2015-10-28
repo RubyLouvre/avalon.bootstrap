@@ -48,10 +48,12 @@ avalon.component("ms:button", {
     }
 })
 
-function toggleRadios(element) {
+function toggleRadios(element, vm, hasActive) {
     var parent = element.parentNode
     while (parent && parent.nodeType === 1) {
         if (parent.getAttribute("data-toggle") === "buttons") {
+            if (!hasActive)
+                vm.active = !vm.active
             var input = element.getElementsByTagName("input")[0]
             if (input) {
                 if (input.type === 'radio') {
@@ -76,8 +78,12 @@ function delegate(event, other) {
                 other(button)
             } else {
                 event.preventDefault()
-                vm.active = !vm.active
-                toggleRadios(button)
+                var hasActive = false
+                if (button.getAttribute("data-toggle") === "button") {
+                    vm.active = !vm.active
+                    hasActive = true
+                }
+                toggleRadios(button, vm, hasActive)
             }
             break
         }

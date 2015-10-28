@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="dist/bundle.js"></script>
+        <style>
+            ms\:button input{
+                display: none; 
+            }
+            body{
+                padding:2em
+            }
+        </style>
+    </head>
+    <body ms-controller="test">
+        <div>
+            <ms:btngroup>
+                <ms:button color="secondary">
+                    Left
+                </ms:button>
+                <ms:button color="secondary">
+                    Middle
+                </ms:button>
+                <ms:button color="secondary">
+                    Right
+                </ms:button>
+            </ms:btngroup>
+
+        </div>
+        <div>
+            <p>通过指定size调整大小</p>
+            <ms:btngroup size="lg">
+                <ms:button color="secondary">
+                    Left
+                </ms:button>
+                <ms:button color="secondary">
+                    Middle
+                </ms:button>
+                <ms:button color="secondary">
+                    Right
+                </ms:button>
+            </ms:btngroup><br/>
+            <ms:btngroup >
+                <ms:button color="secondary">
+                    Left
+                </ms:button>
+                <ms:button color="secondary">
+                    Middle
+                </ms:button>
+                <ms:button color="secondary">
+                    Right
+                </ms:button>
+            </ms:btngroup><br/>
+            <ms:btngroup size="sm">
+                <ms:button color="secondary">
+                    Left
+                </ms:button>
+                <ms:button color="secondary">
+                    Middle
+                </ms:button>
+                <ms:button color="secondary">
+                    Right
+                </ms:button>
+            </ms:btngroup><br/>
+            <ms:btngroup size="xs">
+                <ms:button color="secondary">
+                    Left
+                </ms:button>
+                <ms:button color="secondary">
+                    Middle
+                </ms:button>
+                <ms:button color="secondary">
+                    Right
+                </ms:button>
+            </ms:btngroup>
+        </div>
+
+
+
+    </body>
+</html>

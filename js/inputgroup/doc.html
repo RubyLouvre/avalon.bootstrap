@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="dist/bundle.js"></script>
+        <style>
+            ms\:button input{
+                display: none; 
+            }
+            body{
+                padding:2em
+            }
+        </style>
+    </head>
+    <body ms-controller="test">
+        <div>
+            <ms:inputgroup before="@">
+                <input placeholder="Username">
+            </ms:inputgroup>
+            <ms:inputgroup after=".00">
+                <input placeholder="Recipient's username">
+            </ms:inputgroup>
+            <label for="basic-url">Your vanity URL</label>
+            <ms:inputgroup before="https://example.com/users/">
+                <input id="basic-url" >
+            </ms:inputgroup>
+            <ms:inputgroup before="$" after=".00">
+                <input aria-label="Amount (to the nearest dollar)">
+            </ms:inputgroup>
+
+        </div>
+        <div>
+            <p>通过指定size调整大小</p>
+            <ms:inputgroup size="lg" before="@">
+                <input type="text" placeholder="Username">
+            </ms:inputgroup>
+            <ms:inputgroup before="@">
+                <input type="text" placeholder="Username">
+            </ms:inputgroup>
+            <ms:inputgroup size="sm" before="@">
+                <input type="text" placeholder="Username">
+            </ms:inputgroup>
+        </div>
+
+        <p>Checkboxes and radio addons</p>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <ms:inputgroup before="<input type='checkbox'>">
+                    <input type="text" placeholder="Username" aria-label="Text input with checkbox">
+                </ms:inputgroup>
+            </div>
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <ms:inputgroup before="<input type='radio'>">
+                        <input type="text" placeholder="Username" aria-label="Text input with radio button">
+                    </ms:inputgroup>
+                </div>
+            </div>
+        </div>
+        <p>Button addons</p>
+        <div class="row">
+            <div class="col-lg-6">
+                <ms:inputgroup before="<ms:button color='secondary'>Go!</ms:button>">
+                    <input placeholder="Search for...">
+                </ms:inputgroup>
+            </div>
+            <div class="col-lg-6">
+                <ms:inputgroup after="<ms:button color='secondary'>Go!</ms:button>">
+                    <input placeholder="Search for...">
+                </ms:inputgroup>
+            </div>
+        </div>
+    </body>
+</html>

@@ -47,6 +47,8 @@
 	__webpack_require__(1)
 	__webpack_require__(2)
 	__webpack_require__(3)
+
+	__webpack_require__(4)
 	avalon.define({
 	    $id: "test"
 	})
@@ -6061,13 +6063,51 @@
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var avalon = __webpack_require__(1)
+
+	avalon.component("ms:btngroup", {
+	    $slot: "content",
+	    content: "",
+	    $template: "{{content|html}}",
+	    size: "", //lg sm xs
+	    label: "",
+	    vertical: false,
+	    $dispose: function (vm, element) {
+	        element.innerHTML = ""
+	    },
+	    $ready: function (vm, element) {
+	        var btn = avalon(element)
+	        btn.attr("role", "group")
+	        if (vm.label)
+	            btn.attr("aria-label", vm.label)
+	        if(vm.vertical){
+	             btn.addClass("btn-group-vertical")
+	        }else{
+	             btn.addClass("btn-group")
+	        }
+	       
+	        if (vm.size) {
+	            btn.addClass("btn-group-" + vm.size)
+	        }
+	    }
+	})
+
+
+	module.exports = avalon
+	// 文档 http://v4-alpha.getbootstrap.com/components/buttons/
+	// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(4);
+	var content = __webpack_require__(5);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(6)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6084,10 +6124,10 @@
 	}
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(5)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -6098,7 +6138,7 @@
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports) {
 
 	/*
@@ -6154,7 +6194,7 @@
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
