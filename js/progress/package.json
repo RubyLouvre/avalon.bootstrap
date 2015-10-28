@@ -1,7 +1,7 @@
 {
   "name": "inputgroup",
   "version": "1.0.0",
-  "description": "bootstrap inputgroup",
+  "description": "bootstrap progress",
   "main": "main.js",
   "dependencies": {},
   "devDependencies": {

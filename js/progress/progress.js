@@ -1,56 +1,23 @@
 var avalon = require("avalon")
-
-avalon.component("ms:inputgroup", {
-    $slot: "content",
-    content: "",
-    $template: "{{before|html}}{{content|html}}{{after|html}}",
-    size: "", //lg sm xs
-    before: "",
-    after: "",
-    beforebtn: false,
-    afterbtn: false,
+var supportNative = document.createElement("progress") + "" === "[object HTMLProgressElement]"
+avalon.component("ms:progress", {
+    value: 0,
+    max: 100,
+    $template: supportNative ? '<progress ms-attr-value="value" ms-attr-max="max" class="progress" ms-text="value">{{value}}%</proress> ' :
+            '<div class="progress">' +
+            '<span class="progress-bar" ms-css-width="{{value}}%">{{value}}%</span>' +
+            '</div>',
+    color: "primary", //primary secondary success warning danger 
     $dispose: function (vm, element) {
         element.innerHTML = ""
     },
     $ready: function (vm, element) {
-        var btn = avalon(element)
-        var input = element.getElementsByTagName("input")[0]
-        if (input) {
-            avalon(input).addClass("form-control")
+        var p = avalon(element.children[0])
+        if (vm.color) {
+            p.addClass("progress-" + vm.color)
         }
-
-        if (vm.after) {
-            if (!vm.afterbtn) {
-                vm.afterbtn = /^\<(ms\:button|button)/.test(vm.after)
-            }
-            if (vm.afterbtn) {
-                if (!/input-group-btn/.test(vm.after)) {
-                    vm.after = '<span class="input-group-btn">' + vm.after + '</span>'
-                }
-            } else {
-                if (!/input-group-addon/.test(vm.after)) {
-                    vm.after = '<span class="input-group-addon">' + vm.after + '</span>'
-                }
-            }
-        }
-        if (vm.before) {
-            if (!vm.beforebtn) {
-                vm.beforebtn = /^\<(ms\:button|button)/.test(vm.before)
-            }
-            if (vm.beforebtn) {
-                if (!/input-group-btn/.test(vm.before)) {
-                    vm.before = '<span class="input-group-btn">' + vm.before + '</span>'
-                }
-            } else {
-                if (!/input-group-addon/.test(vm.before)) {
-                    vm.before = '<span class="input-group-addon">' + vm.before + '</span>'
-                }
-            }
-        }
-
-        btn.addClass("input-group")
-        if (vm.size) {
-            btn.addClass("input-group-" + vm.size)
+        if (vm.striped) {
+            p.addClass("progress-striped")
         }
     }
 })
