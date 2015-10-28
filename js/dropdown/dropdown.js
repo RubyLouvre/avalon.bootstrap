@@ -15,6 +15,10 @@ avalon.component("ms:dropdown", {
     onShow: avalon.noop,
     onShown: avalon.noop,
     $skipArray: ["toggleElement", "menuElement"],
+    onInit: avalon.noop,
+    $init: function(vm){
+        vm.onInit(vm)
+    },
     $dispose: function (vm, element) {
         avalon.Array.remove(dropdowns, vm)
         element["ms-dropdown-vm"] = void 0
