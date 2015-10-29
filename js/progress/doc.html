@@ -6,27 +6,30 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="dist/bundle.js"></script>
         <style>
-            ms\:button input{
-                display: none; 
-            }
+           
             body{
                 padding:2em
             }
         </style>
     </head>
     <body ms-controller="test">
+    <xmp ms-skip>
+        <ms:progress value="100" >100%</ms:progress>
+    </xmp>
+    <p>默认value为0, max为100,label就是innerHTML</p>
     <ms:progress >0%</ms:progress>
     <ms:progress value="25">25%</ms:progress>
     <ms:progress value="50" >50%</ms:progress>
     <ms:progress value="75" >75%</ms:progress>
     <ms:progress value="100" >100%</ms:progress>
-    <hr>
+    <p>像其他组件,使用color定义样式</p>
 
     <ms:progress value="25" color="success">25%</ms:progress>
     <ms:progress value="50" color="info">50%</ms:progress>
     <ms:progress value="75" color="warning">75%</ms:progress>
     <ms:progress value="100" color="danger">100%</ms:progress>
-    <hr>
+    <p>添加striped="true",就有渐变效果</p>
+
     <ms:progress value="10" striped="true">10%</ms:progress>
     <ms:progress value="25" color="success" striped="true">25%</ms:progress>
     <ms:progress value="50" color="info" striped="true">50%</ms:progress>

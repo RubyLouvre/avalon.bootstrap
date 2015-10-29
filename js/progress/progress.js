@@ -37,5 +37,4 @@ avalon.component("ms:progress", {
 
 
 module.exports = avalon
-// 文档 http://v4-alpha.getbootstrap.com/components/buttons/
-// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
+// 文档 http://v4-alpha.getbootstrap.com/components/progress/
