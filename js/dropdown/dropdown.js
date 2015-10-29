@@ -66,7 +66,7 @@ avalon.component("ms:dropdown", {
 
 
         if (!items.length) {
-            return;
+            return
         }
 
         var index = items.indexOf(event.target)
