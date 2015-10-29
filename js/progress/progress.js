@@ -7,13 +7,18 @@ avalon.component("ms:progress", {
     value: 0,
     max: 100,
     label: "",
-    $template: supportNative ? '<progress ms-attr-value="value" ms-attr-max="max" class="progress" ms-text="value"></proress>'   :
+    $template: supportNative ? '<progress ms-attr-value="value" ms-attr-max="max" class="progress" ms-text="value"></proress>' :
             '<div class="progress">' +
             '<span class="progress-bar" ms-css-width="{{value}}%"></span>' +
             '</div>',
     color: "primary", //primary secondary success warning danger 
-    $init: function(vm, element){
-        vm.label = element.innerHTML
+    $skipArray: ["label"],
+    $init: function (vm, element) {
+        var fragment = document.createDocumentFragment()
+        var n = element.childNodes
+        while (n[0])
+            fragment.appendChild(n[0])
+        vm.label = fragment
     },
     $dispose: function (vm, element) {
         element.innerHTML = ""
@@ -26,12 +31,22 @@ avalon.component("ms:progress", {
         if (vm.striped) {
             p.addClass("progress-striped")
         }
-        if(vm.label.trim()){
-           var el = document.createElement("span")
-           el.className = "percentage"
-           el.innerHTML = vm.label
-           element.appendChild(el)
+        var el = document.createElement("span")
+        el.className = "percentage"
+        el.appendChild(vm.label)
+        element.appendChild(el)
+        function setColor(a) {
+            
+            el.style.color = Number(a) > 50 ? "#fff" : "#000"
+            
         }
+        
+        vm.$watch("value", setColor)
+        
+        setColor(vm.value)
+
+
+
     }
 })
 

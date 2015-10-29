@@ -5927,13 +5927,18 @@
 	    value: 0,
 	    max: 100,
 	    label: "",
-	    $template: supportNative ? '<progress ms-attr-value="value" ms-attr-max="max" class="progress" ms-text="value"></proress>'   :
+	    $template: supportNative ? '<progress ms-attr-value="value" ms-attr-max="max" class="progress" ms-text="value"></proress>' :
 	            '<div class="progress">' +
 	            '<span class="progress-bar" ms-css-width="{{value}}%"></span>' +
 	            '</div>',
 	    color: "primary", //primary secondary success warning danger 
-	    $init: function(vm, element){
-	        vm.label = element.innerHTML
+	    $skipArray: ["label"],
+	    $init: function (vm, element) {
+	        var fragment = document.createDocumentFragment()
+	        var n = element.childNodes
+	        while (n[0])
+	            fragment.appendChild(n[0])
+	        vm.label = fragment
 	    },
 	    $dispose: function (vm, element) {
 	        element.innerHTML = ""
@@ -5946,12 +5951,22 @@
 	        if (vm.striped) {
 	            p.addClass("progress-striped")
 	        }
-	        if(vm.label.trim()){
-	           var el = document.createElement("span")
-	           el.className = "percentage"
-	           el.innerHTML = vm.label
-	           element.appendChild(el)
+	        var el = document.createElement("span")
+	        el.className = "percentage"
+	        el.appendChild(vm.label)
+	        element.appendChild(el)
+	        function setColor(a) {
+	            
+	            el.style.color = Number(a) > 50 ? "#fff" : "#000"
+	            
 	        }
+	        
+	        vm.$watch("value", setColor)
+	        
+	        setColor(vm.value)
+
+
+
 	    }
 	})
 
@@ -5995,7 +6010,7 @@
 
 
 	// module
-	exports.push([module.id, "ms\\:progress{\n    position: relative;\n    display: block;\n}\nms\\:progress .percentage{\n    display: block;\n    top:0%;\n    left:50%;\n    margin-left:-30px;\n    text-align: center;\n    position: absolute;\n    line-height: 1rem;\n    font-size:12px;\n    width:60px;\n    height:1rem;\n    color:#ccc;\n}\n", ""]);
+	exports.push([module.id, "ms\\:progress{\n    position: relative;\n    display: block;\n}\nms\\:progress .percentage{\n    display: block;\n    top:0%;\n    left:50%;\n    margin-left:-30px;\n    text-align: center;\n    position: absolute;\n    line-height: 1rem;\n    font-size:12px;\n    width:60px;\n    height:1rem;\n    color:#fff;\n}\n", ""]);
 
 	// exports
 
