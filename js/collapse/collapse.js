@@ -14,15 +14,16 @@ avalon.component("ms:collapse", {
     target: "",
     _method: "toggle",
     tiggers: [],
-    $element: {},
+    _element: {},
     $template: "<div>{{content|html}}</div>",
+    onInit: avalon.noop,
     onShow: avalon.noop,
     onShown: avalon.noop,
     onHide: avalon.noop,
     onHidden: avalon.noop,
-    $skipArray: ["tiggers", "_method"],
+    $skipArray: ["tiggers", "_method", "_element"],
     toggle: function () {
-        if (avalon(this.$element).hasClass(ClassName.IN)) {
+        if (avalon(this._element).hasClass(ClassName.IN)) {
             this.hide()
         } else {
             this.show()
@@ -35,7 +36,7 @@ avalon.component("ms:collapse", {
     $replace: true,
     show: function () {
         var _this = this
-        var element = this.$element
+        var element = this._element
         if (this._isTransitioning || avalon(element).hasClass(ClassName.IN)) {
             return
         }
@@ -91,7 +92,7 @@ avalon.component("ms:collapse", {
     _isTransitioning: false,
     hide: function () {
         var _this = this
-        var element = this.$element
+        var element = this._element
         if (this._isTransitioning || !avalon(element).hasClass(ClassName.IN)) {
             return
         }
@@ -139,10 +140,11 @@ avalon.component("ms:collapse", {
     },
     $ready: function (vm, element) {
         element["ms-collapse-vm"] = vm
-        vm.$element = element
+        vm._element = element
         var root = avalon(element)
         root.addClass("collapse")
         element.id = vm.target
+        vm.onInit(vm)
     }
 })
 

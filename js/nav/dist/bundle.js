@@ -49,7 +49,7 @@
 
 	__webpack_require__(4)
 
-	__webpack_require__(6)
+	__webpack_require__(7)
 	avalon.define({
 	    $id: "test"
 	})
@@ -6086,36 +6086,202 @@
 
 	var avalon = __webpack_require__(1)
 	var $ = __webpack_require__(5)
+	__webpack_require__(6)
 
+	var ClassName = {
+	    DROPDOWN_MENU: 'dropdown-menu',
+	    ACTIVE: 'active',
+	    FADE: 'fade',
+	    IN: 'in'
+	};
 	avalon.component("ms:nav", {
 	    $slot: "content",
 	    content: "",
-	    $replace:true,
+	    $replace: true,
 	    $template: '<ul class="nav">{{content|html}}</ul>',
-	    $ready: function(vm, element){
+	    $skipArray: ["_element", "type"],
+	    type: "tabs",
+	    onShow: avalon.noop,
+	    onShown: avalon.noop,
+	    onHide: avalon.noop,
+	    onHidden: avalon.noop,
+	    onInit: avalon.noop,
+	    $ready: function (vm, element) {
 	        var root = avalon(element)
-	       normailizeMenu(element)
-	       if(/(tabs|pills)/.test(vm.type)){
-	           root.addClass("nav-"+vm.type)
-	       }
-	       if(vm.stacked){
+	        vm._element = element
+	        element["ms-nav-vm"] = vm
+	        normailizeMenu(element)
+	        if (/(tabs|pills)/.test(vm.type)) {
+	            root.addClass("nav-" + vm.type)
+	        }
+	        if (vm.stacked) {
 	            root.addClass("nav-stacked")
-	       }
+	        }
+	        vm.onInit(vm)
+	    },
+	    show: function (elem) {
+	        console.log("show....")
+	        var _this = this //切换页面
+
+	        if (avalon(elem).hasClass(ClassName.ACTIVE)) {
+	            return
+	        }
+
+	        var previous = undefined;
+	        var root = this._element
+	        var previous = $(".active", root)
+	        previous = previous[previous.length - 1]
+
+	        if (previous) {
+	            var hideRet = this.onHide.call(this, previous)
+	        }
+
+	        var showRet = this.onShow.call(this, elem)
+
+	        if (hideRet === false || showRet === false) {
+	            return
+	        }
+	        console.log(elem)
+	        if (elem.getAttribute("data-toggle")) {
+	            var id = elem.getAttribute("href", 2) || elem.getAttribute("data-target")
+	            if (id && id.length > 2 && id.charAt("0") === "#") {
+	                //target为要打开切换卡面板或下拉菜单
+	                var target = document.getElementById(id.slice(1))
+	            }
+	        }
+
+	        this._activate(elem, root)
+
+	        var complete = function complete() {
+	             _this.onHidden.call(_this, elem)
+	            _this.onShown.call(_this, previous)
+	        }
+
+	        if (target) {
+	            this._activate(target, target.parentNode, complete)
+	        } else {
+	            complete()
+	        }
+	    },
+	    _activate: function (element, container, callback) {
+	        var active = $(".active", container)[0] //找到已经打开的面板或选中的下拉菜单项
+	        var hook = avalon.eventHooks.transitionend
+	        var _this = this
+	        var transitionend = hook && hook.type
+	        var isTransitioning = callback && transitionend && (active && avalon(active).hasClass(ClassName.FADE) ||
+	                Boolean($(".fade", container)[0]))
+
+	        var complete = function () {
+	            _this._transitionComplete(element, active, isTransitioning, callback)
+	            if (active) {
+	                avalon.unbind(active, transitionend, complete)
+	            }
+	        }
+
+
+	        if (active && isTransitioning) {
+	            avalon.bind(active, transitionend, complete)
+	        } else {
+	            complete()
+	        }
+
+	        if (active) {
+	            avalon(active).removeClass(ClassName.IN);
+	        }
+	    },
+	    _transitionComplete: function (element, active, isTransitioning, callback) {
+	        if (active) {
+	            avalon(active).removeClass(ClassName.ACTIVE);
+	            //处理下拉菜单
+	            avalon.each(active.children, function (el) {
+	                if (avalon(el).hasClass("dropdown-menu")) {
+	                    var ativeItem = $(ClassName.ACTIVE, el)[0]
+	                    if (ativeItem) {
+	                        avalon(ativeItem).removeClass(ClassName.ACTIVE)
+	                    }
+	                }
+	            })
+
+	            active.setAttribute('aria-expanded', false)
+	        }
+	        //未处于活动状态的面板或菜单处于激活
+	        avalon(element).addClass(ClassName.ACTIVE)
+	        element.setAttribute('aria-expanded', true)
+
+	        if (isTransitioning) {
+	            var reflow = element.offsetWidth
+	            avalon(element).addClass(ClassName.IN);
+	        } else {
+	            avalon(element).removeClass(ClassName.FADE);
+	        }
+	        //打开菜单 
+	        if (element.parentNode && avalon(element.parentNode).hasClass(ClassName.DROPDOWN_MENU)) {
+	            var p = element.parentNode, dropdownElement
+	            while (p) {
+	                if (avalon(p).hasClass("dropdown")) {
+	                    //  $(dropdownElement).find(Selector.DROPDOWN_TOGGLE).addClass(ClassName.ACTIVE);
+	                    break
+	                }
+	            }
+
+
+
+	            element.setAttribute('aria-expanded', true);
+	        }
+
+	        if (callback) {
+	            callback();
+	        }
 	    }
+
+	    // static
+
+
 	})
 
+
 	function normailizeMenu(elem) {
-	    var items = $("li" , elem)
-	    items = items.filter(function(el){
-	       return el.parentNode === elem
-	    }).forEach(function(el){
+	    var items = $("li", elem)
+	    items = items.filter(function (el) {
+	        return el.parentNode === elem
+	    }).forEach(function (el) {
 	        avalon(el).addClass("nav-item")
 	        var a = el.children[0]
-	        if(a && a.nodeName === "A"){
+	        if (a && a.nodeName === "A") {
 	            avalon(a).addClass("nav-link")
 	        }
 	    })
 	}
+
+	function delegate(event) {
+	    var tigger = event.target
+	    while (tigger && tigger.nodeType === 1) {
+	        if (avalon(tigger).hasClass("nav-link")) {
+	            event.preventDefault()
+	            if (avalon(tigger).hasClass("disabled"))
+	                return
+	            //   }
+	            //  if (/^(tab|pill)$/.test(tigger.getAttribute("data-toggle"))) {
+
+	            var _target = tigger
+	            while (tigger && tigger.nodeType === 1) {
+	                var vm = tigger["ms-nav-vm"]
+	                if (vm) {
+	                    avalon.components["ms:nav"].show.call(vm, _target)
+	                    break
+	                }
+	                tigger = tigger.parentNode
+	            }
+	            break
+	        }
+	        tigger = tigger.parentNode
+	    }
+	}
+
+	avalon(document).bind("click", delegate)
+
+	module.exports = avalon
+
 
 	/**
 	 * 
@@ -6141,18 +6307,18 @@
 	function _find(selector, context) {
 
 	    /**
-	     * This is what you call via x()
-	     * Starts everything off...
+	     * 保持与JQ的调用接口一致
+	     * 
 	     */
 
 	    context = context || document;
 
 	    var simple = /^[\w\-_#]+$/.test(selector);
-
+	     //如果存在多个选择符,并可以使用querySelectorAll
 	    if (!simple && context.querySelectorAll) {
 	        return realArray(context.querySelectorAll(selector));
 	    }
-
+	    //处理并联选择器
 	    if (selector.indexOf(',') > -1) {
 	        var split = selector.split(/,/g), ret = [], sIndex = 0, len = split.length;
 	        for (; sIndex < len; ++sIndex) {
@@ -6167,13 +6333,13 @@
 	            className = !id && (part.match(exprClassName) || na)[1],
 	            nodeName = !id && (part.match(exprNodeName) || na)[1],
 	            collection;
-
+	    //处理类选择器
 	    if (className && !nodeName && context.getElementsByClassName) {
 
 	        collection = realArray(context.getElementsByClassName(className));
 
 	    } else {
-
+	 //兼容类选择器
 	        collection = !id && realArray(context.getElementsByTagName(nodeName || '*'));
 
 	        if (className) {
@@ -6193,8 +6359,7 @@
 	function realArray(c) {
 
 	    /**
-	     * Transforms a node collection into
-	     * a real array
+	     * 转换纯数组
 	     */
 
 	    try {
@@ -6212,9 +6377,7 @@
 	function filterParents(selectorParts, collection, direct) {
 
 	    /**
-	     * This is where the magic happens.
-	     * Parents are stepped through (upwards) to
-	     * see if they comply with the selector.
+	     * 处理亲子选择器
 	     */
 
 	    var parentSelector = selectorParts.pop();
@@ -6261,7 +6424,7 @@
 
 
 	var unique = (function () {
-
+	    //去掉
 	    var uid = +new Date();
 
 	    var data = (function () {
@@ -6285,10 +6448,6 @@
 	    })();
 
 	    return function (arr) {
-
-	        /**
-	         * Returns a unique array
-	         */
 
 	        var length = arr.length,
 	                ret = [],
@@ -6330,7 +6489,8 @@
 
 
 	/*
-	 support
+	 用法类似JQ, 支持以下简单组合
+	 #id
 	 tag
 	 tag > .className
 	 tag > tag
@@ -6340,19 +6500,49 @@
 	 tag#id.className
 	 .className
 	 span > * > b
+	tag.className tag.class
+
+	================
+
+	不支持各种:伪类, []属性选择器, ~兄长选择器, +相邻选择器
 	 */
 
 /***/ },
 /* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var avalon = __webpack_require__(1)
+	var TransitionEndEvent = {
+	    WebkitTransition: 'webkitTransitionEnd',
+	    MozTransition: 'transitionend',
+	    OTransition: 'oTransitionEnd',
+	    transition: 'transitionend'
+	};
+	var el = document.createElement('bootstrap');
+
+	for (var _name in TransitionEndEvent) {
+	    if (el.style[_name] !== undefined) {
+	        avalon.eventHooks.transitionend = {
+	            type:TransitionEndEvent[_name]
+	        }
+	    }
+	}
+
+
+	module.exports = avalon
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(7);
+	var content = __webpack_require__(8);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(9)(content, {});
+	var update = __webpack_require__(10)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6369,10 +6559,10 @@
 	}
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(8)();
+	exports = module.exports = __webpack_require__(9)();
 	// imports
 
 
@@ -6383,7 +6573,7 @@
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports) {
 
 	/*
@@ -6439,7 +6629,7 @@
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*

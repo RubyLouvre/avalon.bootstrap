@@ -74,20 +74,51 @@
     </td>
 </tr>
 </table>
-<ms:nav type="tabs">
-    <li>
-        <a href="#" class="active">Active</a>
+<ms:nav type="pills">
+  <li class="nav-item">
+    <a href="#" class="nav-link active">Active</a>
+  </li>
+  <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+    <div class="dropdown-menu">
+      <a class="dropdown-item" href="#">Action</a>
+      <a class="dropdown-item" href="#">Another action</a>
+      <a class="dropdown-item" href="#">Something else here</a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="#">Separated link</a>
+    </div>
+  </li>
+  <li class="nav-item">
+    <a href="#" class="nav-link">Another link</a>
+  </li>
+  <li class="nav-item">
+    <a href="#" class="nav-link disabled">Disabled</a>
+  </li>
+</ms:nav>
+
+<ms:nav class="nav nav-tabs" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" href="#home" role="tab" data-toggle="tab">Home</a>
     </li>
-    <li>
-        <a href="#" >Link</a>
+    <li class="nav-item">
+        <a class="nav-link" href="#profile" role="tab" data-toggle="tab">Profile</a>
     </li>
-    <li>
-        <a href="#" >Another link</a>
+    <li class="nav-item">
+        <a class="nav-link" href="#messages" role="tab" data-toggle="tab">Messages</a>
     </li>
-    <li class="disabled">
-        <a href="#" >Disabled</a>
+    <li class="nav-item">
+        <a class="nav-link" href="#settings" role="tab" data-toggle="tab">Settings</a>
     </li>
 </ms:nav>
+
+<!-- Tab panes -->
+<div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="home">面板1</div>
+    <div role="tabpanel" class="tab-pane" id="profile">面板2</div>
+    <div role="tabpanel" class="tab-pane" id="messages">面板3</div>
+    <div role="tabpanel" class="tab-pane" id="settings">面板4</div>
+</div>
+
 </body>
 </html>
 

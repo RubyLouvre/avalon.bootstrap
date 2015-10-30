@@ -6018,6 +6018,7 @@
 	        avalon(button).addClass("focus")
 	    })
 	})
+
 	avalon(document).bind("focusout", function (event) {
 	    delegate(event, function (button) {
 	        avalon(button).removeClass("focus")
@@ -6098,15 +6099,16 @@
 	    target: "",
 	    _method: "toggle",
 	    tiggers: [],
-	    $element: {},
+	    _element: {},
 	    $template: "<div>{{content|html}}</div>",
+	    onInit: avalon.noop,
 	    onShow: avalon.noop,
 	    onShown: avalon.noop,
 	    onHide: avalon.noop,
 	    onHidden: avalon.noop,
-	    $skipArray: ["tiggers", "_method"],
+	    $skipArray: ["tiggers", "_method", "_element"],
 	    toggle: function () {
-	        if (avalon(this.$element).hasClass(ClassName.IN)) {
+	        if (avalon(this._element).hasClass(ClassName.IN)) {
 	            this.hide()
 	        } else {
 	            this.show()
@@ -6119,26 +6121,10 @@
 	    $replace: true,
 	    show: function () {
 	        var _this = this
-	        var element = this.$element
+	        var element = this._element
 	        if (this._isTransitioning || avalon(element).hasClass(ClassName.IN)) {
 	            return
 	        }
-	//
-	//        var actives = undefined;
-	//        var activesData = undefined;
-	//
-	//        if (this._parent) {
-	//            actives = $('.panel > .in, .panel > .collapsing');
-	//            if (!actives.length) {
-	//                actives = null;
-	//            }
-	//        }
-	//
-	//        if (actives) {
-	//            if (actives[0]._isTransitioning) {
-	//                return;
-	//            }
-	//        }
 	        var ret = this.onShow.call(element, this)
 	        if (ret === false) {
 	            return
@@ -6191,7 +6177,7 @@
 	    _isTransitioning: false,
 	    hide: function () {
 	        var _this = this
-	        var element = this.$element
+	        var element = this._element
 	        if (this._isTransitioning || !avalon(element).hasClass(ClassName.IN)) {
 	            return
 	        }
@@ -6239,10 +6225,11 @@
 	    },
 	    $ready: function (vm, element) {
 	        element["ms-collapse-vm"] = vm
-	        vm.$element = element
-	        var host = avalon(element)
-	        host.addClass("collapse")
+	        vm._element = element
+	        var root = avalon(element)
+	        root.addClass("collapse")
 	        element.id = vm.target
+	        vm.onInit(vm)
 	    }
 	})
 

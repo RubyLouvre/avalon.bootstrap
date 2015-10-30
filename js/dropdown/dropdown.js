@@ -14,18 +14,70 @@ avalon.component("ms:dropdown", {
     onHidden: avalon.noop,
     onShow: avalon.noop,
     onShown: avalon.noop,
-    $skipArray: ["toggleElement", "menuElement"],
     onInit: avalon.noop,
-    $init: function(vm){
-        vm.onInit(vm)
-    },
+    $skipArray: ["_trigger", "_element"],
+    open: false,
+    _trigger: {},
+    _element: {},
     $dispose: function (vm, element) {
+        vm._element = vm._trigger = null
         avalon.Array.remove(dropdowns, vm)
         element["ms-dropdown-vm"] = void 0
         element.innerHTML = ""
     },
+    
+    $ready: function (vm, element) {
+        var trigger = getPrevElement(element)
+        if (!trigger) {
+            throw "<ms:dropdown>元素前面必须存在元素节点"
+        }
+        var parent = element.parentNode
+
+        avalon(parent).addClass("dropdown")
+
+        avalon(trigger).addClass("toggle-dropdown").
+                attr("data-toggle", "dropdown")
+        vm._trigger = trigger
+        avalon(element).addClass("dropdown-menu").
+                attr("role", "menu")
+
+
+        element["ms-dropdown-vm"] = vm
+
+        vm._element = element
+        if (vm.menuRight) {
+            avalon(element).addClass("dropdown-menu-right")
+        }
+
+        normailizeMenu(element.childNodes)
+
+
+        function switchOpen(a) {
+            avalon(parent).toggleClass(ClassName.OPEN, a)
+
+            trigger.setAttribute("aria-expanded", a)
+            if (a) {
+                parent.setAttribute(ClassName.OPEN, true)
+            } else {
+                parent.removeAttribute(ClassName.OPEN)
+            }
+        }
+
+        avalon.Array.ensure(dropdowns, vm)
+        
+        if (avalon(parent).hasClass(ClassName.OPEN)) {
+            vm.open = true
+        }
+        
+        switchOpen(vm.open)
+
+        vm.$watch(ClassName.OPEN, switchOpen)
+        vm.onInit(vm)
+
+    },
     keydownHandler: function (event) {
-        var target = this
+
+        // this可能为trigger或 menu
         if (!/(38|40|27|32)/.test(event.which) || /input|textarea/i.test(event.target.tagName)) {
             return
         }
@@ -33,27 +85,28 @@ avalon.component("ms:dropdown", {
         event.preventDefault()
         event.stopPropagation()
 
-        if (target.disabled || avalon(target).hasClass(ClassName.DISABLED)) {//toggleElement
+        if (this.disabled || avalon(this).hasClass(ClassName.DISABLED)) {
             return
         }
-        var parent = getParent(target)
-        if (!parent)
-            return
+        var menu = this
+        if (avalon(this).hasClass("toggle-dropdown")) {
+            menu = getNextElement(menu)
+            if (!menu)
+                return
+        }
 
-
-        var vm = parent["ms-dropdown-vm"]
-
-        var isActive = avalon(parent).hasClass(ClassName.OPEN)
+        var vm = menu["ms-dropdown-vm"]
+        var isActive = vm.open
 
         if (!isActive && event.which !== 27 || isActive && event.which === 27) {
             if (event.which === 27) {
-                var toggle = vm.toggleElement
-                avalon.fireDom(toggle, "focus")
+                var trigger = vm._trigger
+                avalon.fireDom(trigger, "focus")
             }
-            avalon.fireDom(target, "click")
+            avalon.fireDom(this, "click")
             return
         }
-        var children = vm.menuElement.children, items = []
+        var children = menu.children, items = []
         for (var i = 0, el; el = children[i++]; ) {
             if ((el.offsetWidth || el.offsetHeight) &&
                     !el.disabled &&
@@ -63,7 +116,6 @@ avalon.component("ms:dropdown", {
                 items.push(el)
             }
         }
-
 
         if (!items.length) {
             return
@@ -89,19 +141,19 @@ avalon.component("ms:dropdown", {
             }
         }
 
-
-
         items[index].focus()
     },
-    toggle: function (event) {
-
+    toggle: function () {
+        //this 为 trigger
         if (this.disabled || avalon(this).hasClass(ClassName.DISABLED)) {
             return false
         }
-        var parent = getParent(this) //Dropdown._getParentFromElement(this);
-        if (!parent || !parent["ms-dropdown-vm"])
+
+        var menu = getNextElement(this)
+       
+        if (!menu)
             return
-        var vm = parent["ms-dropdown-vm"]
+        var vm = menu["ms-dropdown-vm"]
         var isActive = vm.open
 
         avalon.components["ms:dropdown"]._clearMenus(0)
@@ -111,20 +163,19 @@ avalon.component("ms:dropdown", {
 
         if ('ontouchstart' in document.documentElement) {
             // if mobile we use a backdrop because click events don't delegate
-            var backdrop = document.createElement('div');
+            var backdrop = document.createElement('div')
             backdrop.className = ClassName.BACKDROP
-            backdrop.parentNode.insertBefore(dropdown, this)
+            this.parentNode.insertBefore(backdrop, this)
             avalon(backdrop).bind('click', avalon.components["ms:dropdown"]._clearMenus)
             backdrops.push(backdrop)
         }
-        var ret = vm.onShow.call(parent, vm)
+        var ret = vm.onShow.call(menu, vm)
         if (ret === false) {
             return false
         }
         this.focus()
-        avalon.log("又打开")
         vm.open = true
-        vm.onShown.call(parent, vm)
+        vm.onShown.call(menu, vm)
 
     },
     _clearMenus: function (event) {//关闭页面上所有菜单
@@ -138,18 +189,16 @@ avalon.component("ms:dropdown", {
 
         for (var i = 0; i < dropdowns.length; i++) {
             var vm = dropdowns[i]
-            var toggle = vm.toggleElement
-            var parent = toggle.parentNode
+            var menu = vm._element
 
             if (!vm.open) {
                 continue
             }
-//&& /input|textarea/i.test(event.target.tagName)
             if (event && event.type === 'click' &&
-                    avalon.contains(parent, event.target)) {
+                    avalon.contains(menu.parentNode, event.target)) {
                 continue
             }
-            var ret = vm.onHide.call(parent, vm)
+            var ret = vm.onHide.call(menu, vm)
 
             if (ret === false) {
                 continue
@@ -157,54 +206,8 @@ avalon.component("ms:dropdown", {
 
             vm.open = false
 
-            vm.onHidden.call(parent, vm)
+            vm.onHidden.call(menu, vm)
 
-        }
-    },
-    $ready: function (vm, element) {
-        element["ms-dropdown-vm"] = vm
-
-        avalon.Array.ensure(dropdowns, vm)
-
-        var dropdown = avalon(element)
-        dropdown.addClass("dropdown")
-        dropdown.toggleClass(ClassName.OPEN, vm.open)
-        //----------
-        var children = element.children, btn, menu
-        for (var i = 0, el; el = children[i++]; ) {
-            if (/button/i.test(el.nodeName)) {
-                btn = avalon(el)
-                vm.toggleElement = el
-                el.style.position = "absolute"//hack bootstrap v4
-            } else if (!menu) {
-                normailizeMenu(el.childNodes)
-                menu = avalon(el)
-                vm.menuElement = el
-            }
-        }
-        if (!btn) {
-            avalon.log("必须指定<ms:button>或button")
-            return
-        }
-        btn.addClass("dropdown-toggle")
-        btn.attr("data-toggle", "dropdown")
-        btn.attr("aria-haspopup", "true")
-        vm.$watch(ClassName.OPEN, function (a) {
-            dropdown.toggleClass(ClassName.OPEN, a)
-            dropdown.attr("aria-expanded", a)
-            if (a) {
-                element.setAttribute(ClassName.OPEN, true)
-            } else {
-                element.removeAttribute(ClassName.OPEN)
-            }
-        })
-        //---------------
-        menu.attr("role", "menu")
-        menu.addClass("dropdown-menu")
-        menu.css("top", btn[0].offsetHeight)//hack bootstrap v4
-
-        if (vm.menuRight) {
-            menu.addClass("dropdown-menu-right")
         }
     }
 })
@@ -234,13 +237,26 @@ function normailizeMenu(elems) {
         }
     }
 }
-function getParent(target) {
-    while (target && target.nodeType === 1) {
-        if (avalon(target).hasClass("dropdown")) {
-            return target
-        }
-        target = target.parentNode
+function getNextElement(node) {
+    node = node.nextSibling
+    while (node.nodeType !== 1) {
+        node = node.nextSibling
     }
+    return node
+}
+
+function getPrevElement(node) {
+    node = node.previousSibling
+    while (node.nodeType !== 1) {
+        node = node.previousSibling
+    }
+    return node
+}
+
+function getDropDownParent(target) {
+    var parent = target.parentNode
+    if (avalon(parent).hasClass("dropdown"))
+        return parent
     return null
 }
 
@@ -248,13 +264,13 @@ function delegate(event) {
     var target = event.target
     var eventType = event.type
     while (target && target.nodeType === 1) {
-        var isToggle = target.getAttribute("data-toggle") === "dropdown"
+        var isTigger = target.getAttribute("data-toggle") === "dropdown"
         var isMenu = /^(menu|listbox)$/.test(target.getAttribute("role"))
-        if (eventType === "keydown" && (isToggle || isMenu)) {
+        if (eventType === "keydown" && (isTigger || isMenu)) {
             avalon.components["ms:dropdown"].keydownHandler.call(target, event)
             break
         }
-        if (eventType === "click" && isToggle) {
+        if (eventType === "click" && isTigger) {
             avalon.components["ms:dropdown"].toggle.call(target, event)
             break
         }
