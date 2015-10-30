@@ -191,7 +191,8 @@ module.exports = _find
 
 
 /*
- 支持以下简单组合, 支持各种伪类,属性选择器
+ 用法类似JQ, 支持以下简单组合
+ #id
  tag
  tag > .className
  tag > tag
@@ -201,4 +202,9 @@ module.exports = _find
  tag#id.className
  .className
  span > * > b
+tag.className tag.class
+
+================
+
+不支持各种:伪类, []属性选择器, ~兄长选择器, +相邻选择器
  */
