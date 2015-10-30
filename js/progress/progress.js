@@ -24,25 +24,23 @@ avalon.component("ms:progress", {
         element.innerHTML = ""
     },
     $ready: function (vm, element) {
-        var p = avalon(element.children[0])
+        var root = avalon(element.children[0])
         if (vm.color) {
-            p.addClass("progress-" + vm.color)
+            root.addClass("progress-" + vm.color)
         }
         if (vm.striped) {
-            p.addClass("progress-striped")
+            root.addClass("progress-striped")
         }
         var el = document.createElement("span")
         el.className = "percentage"
         el.appendChild(vm.label)
         element.appendChild(el)
         function setColor(a) {
-            
             el.style.color = Number(a) > 50 ? "#fff" : "#000"
-            
         }
-        
+
         vm.$watch("value", setColor)
-        
+
         setColor(vm.value)
 
 

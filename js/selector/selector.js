@@ -9,18 +9,18 @@ var snack = /(?:[\w\-\\.#]+)+(?:\[\w+?=([\'"])?(?:\\\1|.)+?\1\])?|\*|>/ig,
 function _find(selector, context) {
 
     /**
-     * This is what you call via x()
-     * Starts everything off...
+     * 保持与JQ的调用接口一致
+     * 
      */
 
     context = context || document;
 
     var simple = /^[\w\-_#]+$/.test(selector);
-
+     //如果存在多个选择符,并可以使用querySelectorAll
     if (!simple && context.querySelectorAll) {
         return realArray(context.querySelectorAll(selector));
     }
-
+    //处理并联选择器
     if (selector.indexOf(',') > -1) {
         var split = selector.split(/,/g), ret = [], sIndex = 0, len = split.length;
         for (; sIndex < len; ++sIndex) {
@@ -35,13 +35,13 @@ function _find(selector, context) {
             className = !id && (part.match(exprClassName) || na)[1],
             nodeName = !id && (part.match(exprNodeName) || na)[1],
             collection;
-
+    //处理类选择器
     if (className && !nodeName && context.getElementsByClassName) {
 
         collection = realArray(context.getElementsByClassName(className));
 
     } else {
-
+ //兼容类选择器
         collection = !id && realArray(context.getElementsByTagName(nodeName || '*'));
 
         if (className) {
@@ -61,8 +61,7 @@ function _find(selector, context) {
 function realArray(c) {
 
     /**
-     * Transforms a node collection into
-     * a real array
+     * 转换纯数组
      */
 
     try {
@@ -80,9 +79,7 @@ function realArray(c) {
 function filterParents(selectorParts, collection, direct) {
 
     /**
-     * This is where the magic happens.
-     * Parents are stepped through (upwards) to
-     * see if they comply with the selector.
+     * 处理亲子选择器
      */
 
     var parentSelector = selectorParts.pop();
@@ -129,7 +126,7 @@ function filterParents(selectorParts, collection, direct) {
 
 
 var unique = (function () {
-
+    //去掉
     var uid = +new Date();
 
     var data = (function () {
@@ -153,10 +150,6 @@ var unique = (function () {
     })();
 
     return function (arr) {
-
-        /**
-         * Returns a unique array
-         */
 
         var length = arr.length,
                 ret = [],
@@ -198,7 +191,7 @@ module.exports = _find
 
 
 /*
- support
+ 支持以下简单组合, 支持各种伪类,属性选择器
  tag
  tag > .className
  tag > tag

@@ -12,13 +12,15 @@ avalon.component("ms:collapse", {
     $slot: "content",
     content: "",
     target: "",
-    $toggle: "toggle",
+    _method: "toggle",
+    tiggers: [],
     $element: {},
     $template: "<div>{{content|html}}</div>",
     onShow: avalon.noop,
     onShown: avalon.noop,
     onHide: avalon.noop,
     onHidden: avalon.noop,
+    $skipArray: ["tiggers", "_method"],
     toggle: function () {
         if (avalon(this.$element).hasClass(ClassName.IN)) {
             this.hide()
@@ -37,26 +39,21 @@ avalon.component("ms:collapse", {
         if (this._isTransitioning || avalon(element).hasClass(ClassName.IN)) {
             return
         }
-//
-//        var actives = undefined;
-//        var activesData = undefined;
-//
-//        if (this._parent) {
-//            actives = $('.panel > .in, .panel > .collapsing');
-//            if (!actives.length) {
-//                actives = null;
-//            }
-//        }
-//
-//        if (actives) {
-//            if (actives[0]._isTransitioning) {
-//                return;
-//            }
-//        }
         var ret = this.onShow.call(element, this)
         if (ret === false) {
             return
         }
+
+        this.tiggers.forEach(function (tigger) {
+            if (avalon.contains(document.body, tigger)) {
+                tigger.setAttribute('aria-expanded', true)
+            } else {
+                setTimeout(function () {
+                    avalon.Array.remove(_this.tiggers, tigger)
+                })
+            }
+        })
+
         var dimension = this._getDimension()
 
         avalon(element).removeClass(ClassName.COLLAPSE).addClass(ClassName.COLLAPSING);
@@ -102,7 +99,15 @@ avalon.component("ms:collapse", {
         if (ret === false) {
             return
         }
-
+        this.tiggers.forEach(function (tigger) {
+            if (avalon.contains(document.body, tigger)) {
+                tigger.setAttribute('aria-expanded', false)
+            } else {
+                setTimeout(function () {
+                    avalon.Array.remove(_this.tiggers, tigger)
+                })
+            }
+        })
         var dimension = this._getDimension()
         var offsetDimension = dimension === "width" ? 'offsetWidth' : 'offsetHeight'
 
@@ -135,31 +140,32 @@ avalon.component("ms:collapse", {
     $ready: function (vm, element) {
         element["ms-collapse-vm"] = vm
         vm.$element = element
-        var host = avalon(element)
-        host.addClass("collapse")
+        var root = avalon(element)
+        root.addClass("collapse")
         element.id = vm.target
     }
 })
 
 function delegate(event) {
-    var button = event.target
-    while (button && button.nodeType === 1) {
-        if (button.getAttribute("data-toggle") === "collapse") {
+    var tigger = event.target
+    while (tigger && tigger.nodeType === 1) {
+        if (tigger.getAttribute("data-toggle") === "collapse") {
             event.preventDefault()
-            var id = button.getAttribute("data-target") || button.getAttribute("href", 2)
+            var id = tigger.getAttribute("data-target") || tigger.getAttribute("href", 2)
             if (id && id.length > 1 && id.charAt("0") === "#") {
                 id = id.slice(1)
                 var el = document.getElementById(id)
                 if (el && el["ms-collapse-vm"]) {
                     var vm = el["ms-collapse-vm"]
-                    var method = vm.$toggle
+                    var method = vm._method
+                    avalon.Array.ensure(vm.tiggers, tigger)
                     avalon.components["ms:collapse"][method].call(vm)
                 }
             }
             break
 
         }
-        button = button.parentNode
+        tigger = tigger.parentNode
     }
 }
 

@@ -44,8 +44,9 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	__webpack_require__(1)
+	var avalon = __webpack_require__(1)
 	__webpack_require__(2)
+
 	__webpack_require__(4)
 
 	__webpack_require__(6)
@@ -6018,6 +6019,7 @@
 	        avalon(button).addClass("focus")
 	    })
 	})
+
 	avalon(document).bind("focusout", function (event) {
 	    delegate(event, function (button) {
 	        avalon(button).removeClass("focus")
@@ -6082,222 +6084,263 @@
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var avalon = __webpack_require__(3)
-	//var $ = require("../selector/selector")
-	__webpack_require__(5)
+	var avalon = __webpack_require__(1)
+	var $ = __webpack_require__(5)
 
-	var ClassName = {
-	    IN: 'in',
-	    COLLAPSE: 'collapse',
-	    COLLAPSING: 'collapsing',
-	    COLLAPSED: 'collapsed'
-	}
-	avalon.component("ms:collapse", {
+	avalon.component("ms:nav", {
 	    $slot: "content",
 	    content: "",
-	    target: "",
-	    _method: "toggle",
-	    tiggers: [],
-	    $element: {},
-	    $template: "<div>{{content|html}}</div>",
-	    onShow: avalon.noop,
-	    onShown: avalon.noop,
-	    onHide: avalon.noop,
-	    onHidden: avalon.noop,
-	    $skipArray: ["tiggers", "_method"],
-	    toggle: function () {
-	        if (avalon(this.$element).hasClass(ClassName.IN)) {
-	            this.hide()
-	        } else {
-	            this.show()
-	        }
-	    },
-	    _getDimension: function () {
-	        var hasWidth = avalon(this._element).hasClass("width")
-	        return hasWidth ? "width" : "height"
-	    },
-	    $replace: true,
-	    show: function () {
-	        var _this = this
-	        var element = this.$element
-	        if (this._isTransitioning || avalon(element).hasClass(ClassName.IN)) {
-	            return
-	        }
-	//
-	//        var actives = undefined;
-	//        var activesData = undefined;
-	//
-	//        if (this._parent) {
-	//            actives = $('.panel > .in, .panel > .collapsing');
-	//            if (!actives.length) {
-	//                actives = null;
-	//            }
-	//        }
-	//
-	//        if (actives) {
-	//            if (actives[0]._isTransitioning) {
-	//                return;
-	//            }
-	//        }
-	        var ret = this.onShow.call(element, this)
-	        if (ret === false) {
-	            return
-	        }
-
-	        this.tiggers.forEach(function (tigger) {
-	            if (avalon.contains(document.body, tigger)) {
-	                tigger.setAttribute('aria-expanded', true)
-	            } else {
-	                setTimeout(function () {
-	                    avalon.Array.remove(_this.tiggers, tigger)
-	                })
-	            }
-	        })
-
-	        var dimension = this._getDimension()
-
-	        avalon(element).removeClass(ClassName.COLLAPSE).addClass(ClassName.COLLAPSING);
-
-	        element.style[dimension] = 0;
-	        element.setAttribute('aria-expanded', true)
-	        this._isTransitioning = true
-	        var hook = avalon.eventHooks.transitionend
-	        var transtionend = hook && hook.type
-
-	        var complete = function complete() {
-	            avalon(element).removeClass(ClassName.COLLAPSING).
-	                    addClass(ClassName.COLLAPSE).
-	                    addClass(ClassName.IN)
-
-	            element.style[dimension] = ''
-	            _this._isTransitioning = false
-	            _this.onShown.call(element, _this)
-	            avalon.unbind(element, transtionend, complete)
-	        }
-
-
-	        if (!transtionend) {
-	            complete()
-	            return
-	        }
-
-	        var capitalizedDimension = dimension[0].toUpperCase() + dimension.slice(1)
-	        var scrollSize = 'scroll' + capitalizedDimension;
-
-	        avalon.bind(element, transtionend, complete)
-
-	        element.style[dimension] = element[scrollSize] + 'px'
-	    },
-	    _isTransitioning: false,
-	    hide: function () {
-	        var _this = this
-	        var element = this.$element
-	        if (this._isTransitioning || !avalon(element).hasClass(ClassName.IN)) {
-	            return
-	        }
-	        var ret = this.onHide.call(element, this)
-	        if (ret === false) {
-	            return
-	        }
-	        this.tiggers.forEach(function (tigger) {
-	            if (avalon.contains(document.body, tigger)) {
-	                tigger.setAttribute('aria-expanded', false)
-	            } else {
-	                setTimeout(function () {
-	                    avalon.Array.remove(_this.tiggers, tigger)
-	                })
-	            }
-	        })
-	        var dimension = this._getDimension()
-	        var offsetDimension = dimension === "width" ? 'offsetWidth' : 'offsetHeight'
-
-	        element.style[dimension] = element[offsetDimension] + 'px'
-
-	        var reflow = element.offsetHeight
-
-	        avalon(element).addClass(ClassName.COLLAPSING).removeClass(ClassName.COLLAPSE).removeClass(ClassName.IN)
-
-	        element.setAttribute('aria-expanded', false)
-
-	        this._isTransitioning = true
-	        var hook = avalon.eventHooks.transitionend
-	        var transtionend = hook && hook.type
-	        var complete = function complete() {
-	            _this._isTransitioning = false
-	            avalon.unbind(element, transtionend, complete)
-	            avalon(element).removeClass(ClassName.COLLAPSING).addClass(ClassName.COLLAPSE)
-	            _this.onHidden.call(element, _this)
-
-	        }
-	        element.style[dimension] = 0
-
-	        if (!transtionend) {
-	            complete()
-	            return
-	        }
-	        avalon.bind(element, transtionend, complete)
-	    },
-	    $ready: function (vm, element) {
-	        element["ms-collapse-vm"] = vm
-	        vm.$element = element
-	        var host = avalon(element)
-	        host.addClass("collapse")
-	        element.id = vm.target
+	    $replace:true,
+	    $template: '<ul class="nav">{{content|html}}</ul>',
+	    $ready: function(vm, element){
+	        var root = avalon(element)
+	       normailizeMenu(element)
+	       if(/(tabs|pills)/.test(vm.type)){
+	           root.addClass("nav-"+vm.type)
+	       }
+	       if(vm.stacked){
+	            root.addClass("nav-stacked")
+	       }
 	    }
 	})
 
-	function delegate(event) {
-	    var tigger = event.target
-	    while (tigger && tigger.nodeType === 1) {
-	        if (tigger.getAttribute("data-toggle") === "collapse") {
-	            event.preventDefault()
-	            var id = tigger.getAttribute("data-target") || tigger.getAttribute("href", 2)
-	            if (id && id.length > 1 && id.charAt("0") === "#") {
-	                id = id.slice(1)
-	                var el = document.getElementById(id)
-	                if (el && el["ms-collapse-vm"]) {
-	                    var vm = el["ms-collapse-vm"]
-	                    var method = vm._method
-	                    avalon.Array.ensure(vm.tiggers, tigger)
-	                    avalon.components["ms:collapse"][method].call(vm)
-	                }
-	            }
-	            break
-
+	function normailizeMenu(elem) {
+	    var items = $("li" , elem)
+	    items = items.filter(function(el){
+	       return el.parentNode === elem
+	    }).forEach(function(el){
+	        avalon(el).addClass("nav-item")
+	        var a = el.children[0]
+	        if(a && a.nodeName === "A"){
+	            avalon(a).addClass("nav-link")
 	        }
-	        tigger = tigger.parentNode
-	    }
+	    })
 	}
 
-	avalon(document).bind("click", delegate)
-
-	module.exports = avalon
-
+	/**
+	 * 
+	 * 
+	 * 声明式(标签化)只是『接口』的一种形式
+	 * 
+	 * http://leeluolee.github.io/fequan-netease/#/64
+	 * 自定义标签是MVVM扫描引擎的激活点之一, 自定义标签+符合一定规则的HTML标签构成组件
+	 */
 
 /***/ },
 /* 5 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	var avalon = __webpack_require__(1)
-	var TransitionEndEvent = {
-	    WebkitTransition: 'webkitTransitionEnd',
-	    MozTransition: 'transitionend',
-	    OTransition: 'oTransitionEnd',
-	    transition: 'transitionend'
-	};
-	var el = document.createElement('bootstrap');
+	
 
-	for (var _name in TransitionEndEvent) {
-	    if (el.style[_name] !== undefined) {
-	        avalon.eventHooks.transitionend = {
-	            type:TransitionEndEvent[_name]
+	var snack = /(?:[\w\-\\.#]+)+(?:\[\w+?=([\'"])?(?:\\\1|.)+?\1\])?|\*|>/ig,
+	        exprClassName = /^(?:[\w\-_]+)?\.([\w\-_]+)/,
+	        exprId = /^(?:[\w\-_]+)?#([\w\-_]+)/,
+	        exprNodeName = /^([\w\*\-_]+)/,
+	        na = [null, null];
+
+	function _find(selector, context) {
+
+	    /**
+	     * This is what you call via x()
+	     * Starts everything off...
+	     */
+
+	    context = context || document;
+
+	    var simple = /^[\w\-_#]+$/.test(selector);
+
+	    if (!simple && context.querySelectorAll) {
+	        return realArray(context.querySelectorAll(selector));
+	    }
+
+	    if (selector.indexOf(',') > -1) {
+	        var split = selector.split(/,/g), ret = [], sIndex = 0, len = split.length;
+	        for (; sIndex < len; ++sIndex) {
+	            ret = ret.concat(_find(split[sIndex], context));
+	        }
+	        return unique(ret);
+	    }
+
+	    var parts = selector.match(snack),
+	            part = parts.pop(),
+	            id = (part.match(exprId) || na)[1],
+	            className = !id && (part.match(exprClassName) || na)[1],
+	            nodeName = !id && (part.match(exprNodeName) || na)[1],
+	            collection;
+
+	    if (className && !nodeName && context.getElementsByClassName) {
+
+	        collection = realArray(context.getElementsByClassName(className));
+
+	    } else {
+
+	        collection = !id && realArray(context.getElementsByTagName(nodeName || '*'));
+
+	        if (className) {
+	            collection = filterByAttr(collection, 'className', RegExp('(^|\\s)' + className + '(\\s|$)'));
+	        }
+
+	        if (id) {
+	            var byId = context.getElementById(id);
+	            return byId ? [byId] : [];
 	        }
 	    }
+
+	    return parts[0] && collection[0] ? filterParents(parts, collection) : collection;
+
+	}
+
+	function realArray(c) {
+
+	    /**
+	     * Transforms a node collection into
+	     * a real array
+	     */
+
+	    try {
+	        return Array.prototype.slice.call(c);
+	    } catch (e) {
+	        var ret = [], i = 0, len = c.length;
+	        for (; i < len; ++i) {
+	            ret[i] = c[i];
+	        }
+	        return ret;
+	    }
+
+	}
+
+	function filterParents(selectorParts, collection, direct) {
+
+	    /**
+	     * This is where the magic happens.
+	     * Parents are stepped through (upwards) to
+	     * see if they comply with the selector.
+	     */
+
+	    var parentSelector = selectorParts.pop();
+
+	    if (parentSelector === '>') {
+	        return filterParents(selectorParts, collection, true);
+	    }
+
+	    var ret = [],
+	            r = -1,
+	            id = (parentSelector.match(exprId) || na)[1],
+	            className = !id && (parentSelector.match(exprClassName) || na)[1],
+	            nodeName = !id && (parentSelector.match(exprNodeName) || na)[1],
+	            cIndex = -1,
+	            node, parent,
+	            matches;
+
+	    nodeName = nodeName && nodeName.toLowerCase();
+
+	    while ((node = collection[++cIndex])) {
+
+	        parent = node.parentNode;
+
+	        do {
+
+	            matches = !nodeName || nodeName === '*' || nodeName === parent.nodeName.toLowerCase();
+	            matches = matches && (!id || parent.id === id);
+	            matches = matches && (!className || RegExp('(^|\\s)' + className + '(\\s|$)').test(parent.className));
+
+	            if (direct || matches) {
+	                break;
+	            }
+
+	        } while ((parent = parent.parentNode));
+
+	        if (matches) {
+	            ret[++r] = node;
+	        }
+	    }
+
+	    return selectorParts[0] && ret[0] ? filterParents(selectorParts, ret) : ret;
+
 	}
 
 
-	module.exports = avalon
+	var unique = (function () {
 
+	    var uid = +new Date();
+
+	    var data = (function () {
+
+	        var n = 1;
+
+	        return function (elem) {
+
+	            var cacheIndex = elem[uid],
+	                    nextCacheIndex = n++;
+
+	            if (!cacheIndex) {
+	                elem[uid] = nextCacheIndex;
+	                return true;
+	            }
+
+	            return false;
+
+	        };
+
+	    })();
+
+	    return function (arr) {
+
+	        /**
+	         * Returns a unique array
+	         */
+
+	        var length = arr.length,
+	                ret = [],
+	                r = -1,
+	                i = 0,
+	                item;
+
+	        for (; i < length; ++i) {
+	            item = arr[i];
+	            if (data(item)) {
+	                ret[++r] = item;
+	            }
+	        }
+
+	        uid += 1;
+
+	        return ret;
+
+	    };
+
+	})();
+
+	function filterByAttr(collection, attr, regex) {
+
+	    var i = -1, node, r = -1, ret = [];
+
+	    while ((node = collection[++i])) {
+	        if (regex.test(node[attr])) {
+	            ret[++r] = node;
+	        }
+	    }
+
+	    return ret
+	}
+
+
+	module.exports = _find
+
+
+
+	/*
+	 support
+	 tag
+	 tag > .className
+	 tag > tag
+	 #id > tag.className
+	 .className tag
+	 tag, tag, #id
+	 tag#id.className
+	 .className
+	 span > * > b
+	 */
 
 /***/ },
 /* 6 */

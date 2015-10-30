@@ -97,6 +97,7 @@ avalon(document).bind("focusin", function (event) {
         avalon(button).addClass("focus")
     })
 })
+
 avalon(document).bind("focusout", function (event) {
     delegate(event, function (button) {
         avalon(button).removeClass("focus")
