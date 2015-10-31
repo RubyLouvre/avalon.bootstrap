@@ -26,6 +26,9 @@ avalon.component("ms:nav", {
         vm._element = element
         element["ms-nav-vm"] = vm
         var menu = normailizeMenu(element)
+        if(root.hasClass("nav-pills")){
+            vm.type = "pills"
+        }
         if (/(tabs|pills)/.test(vm.type)) {
             root.addClass("nav-" + vm.type)
         }

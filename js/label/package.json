@@ -1,7 +1,7 @@
 {
-  "name": "inputgroup",
+  "name": "label",
   "version": "1.0.0",
-  "description": "bootstrap inputgroup",
+  "description": "bootstrap label",
   "main": "main.js",
   "dependencies": {},
   "devDependencies": {

@@ -15,68 +15,32 @@
         </style>
     </head>
     <body ms-controller="test">
-        <h3>输入组input-group</h3>
-        <p>bootstrap只支持1个输入框和最多2个挂件, 前面的使用before属性定义,后面的使用after属性定义.
-        如果属性值为文本,那么叫做文本挂件,会生成一个span元素加上.input-group-addon类名,插入到对应位置
-        如果属性值为一个HTML,且为checkbox, radio,则称为按钮挂件,转换元素后加上.input-group-btn类名,插入到对应位置
-        </p>
+        <h3>标签iabel</h3>
+        <p>在bootstarp4中,它是将原来的标签组件与徽章组件合并起来.</p>
         <div>
-            <ms:inputgroup before="@">
-                <input placeholder="Username">
-            </ms:inputgroup>
-            <ms:inputgroup after=".00">
-                <input placeholder="Recipient's username">
-            </ms:inputgroup>
-            <label for="basic-url">Your vanity URL</label>
-            <ms:inputgroup before="https://example.com/users/">
-                <input id="basic-url" >
-            </ms:inputgroup>
-            <ms:inputgroup before="$" after=".00">
-                <input aria-label="Amount (to the nearest dollar)">
-            </ms:inputgroup>
+            <a href="#">Mailbox <ms:label pill="true">50</ms:label></a>
+            <a href="#">Mailbox <ms:label pill="true"></ms:label></a>
 
-        </div>
-        <div>
-            <p>通过指定size调整大小</p>
-            <ms:inputgroup size="lg" before="@">
-                <input type="text" placeholder="Username">
-            </ms:inputgroup>
-            <ms:inputgroup before="@">
-                <input type="text" placeholder="Username">
-            </ms:inputgroup>
-            <ms:inputgroup size="sm" before="@">
-                <input type="text" placeholder="Username">
-            </ms:inputgroup>
-        </div>
+            <p>当没有新的或未读的项时，通过 CSS 的 :empty 选择器，徽章会折叠起来，表示里边没有内容。</p>
+            <p>您可以在激活状态的胶囊式导航和列表导航中放置徽章。</p>
+            <h4>胶囊式导航中的激活状态</h4>
 
-        <p>Checkboxes and radio addons</p>
-
-        <div class="row">
-            <div class="col-lg-6">
-                <ms:inputgroup before="<input type='checkbox'>">
-                    <input type="text" placeholder="Username" aria-label="Text input with checkbox">
-                </ms:inputgroup>
-            </div>
-            <div class="col-lg-6">
-                <div class="input-group">
-                    <ms:inputgroup before="<input type='radio'>">
-                        <input type="text" placeholder="Username" aria-label="Text input with radio button">
-                    </ms:inputgroup>
-                </div>
-            </div>
-        </div>
-        <p>Button addons</p>
-        <div class="row">
-            <div class="col-lg-6">
-                <ms:inputgroup before="<ms:button color='secondary'>Go!</ms:button>">
-                    <input placeholder="Search for...">
-                </ms:inputgroup>
-            </div>
-            <div class="col-lg-6">
-                <ms:inputgroup after="<ms:button color='secondary'>Go!</ms:button>">
-                    <input placeholder="Search for...">
-                </ms:inputgroup>
-            </div>
-        </div>
+            <ms:nav type="pills">
+                <li><a href="#" class="active"><ms:label pill="true" style="background:#fff;color:#000" class="pull-right">42</ms:label>首页</a></li>
+                <li><a href="#">简介</a></li>
+                <li><a href="#"><ms:label pill="true">3</ms:label>消息</a></li>
+            </ms:nav>
+            <br clear="both"/>
+            <h4>列表导航中的激活状态</h4>
+            <ms:nav class="nav-stacked nav-pills" style="max-width: 260px;">
+                <li>
+                    <a href="#" class="active">
+                       <ms:label pill="true" color="info" class="pull-right">42</ms:label>
+                        首页
+                    </a>
+                </li>
+                <li><a href="#">简介</a></li>
+                <li><a href="#"><ms:label pill="true">3</ms:label>消息</a></li>
+            </ms:nav>
     </body>
 </html>

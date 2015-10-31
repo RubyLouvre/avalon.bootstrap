@@ -3473,11 +3473,14 @@ avalon.component = function (name, opts) {
                 if (keepReplace) {
                     elem.parentNode.replaceChild(child, elem)
                     child.msResolved = 1
+                    var cssText = elem.style.cssText
+
                     var className = elem.className
                     elem = host.element = child
                     if(className){
                        avalon(elem).addClass(className)
                     }
+                     elem.style.cssText = cssText
                 }
                 if (keepContainer) {
                     keepContainer.appendChild(elem)
