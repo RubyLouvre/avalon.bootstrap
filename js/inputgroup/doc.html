@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>TODO supply a title</title>
+        <title>input-group</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="dist/bundle.js"></script>
@@ -15,6 +15,11 @@
         </style>
     </head>
     <body ms-controller="test">
+        <h3>输入组input-group</h3>
+        <p>bootstrap只支持1个输入框和最多2个挂件, 前面的使用before属性定义,后面的使用after属性定义.
+        如果属性值为文本,那么叫做文本挂件,会生成一个span元素加上.input-group-addon类名,插入到对应位置
+        如果属性值为一个HTML,且为checkbox, radio,则称为按钮挂件,转换元素后加上.input-group-btn类名,插入到对应位置
+        </p>
         <div>
             <ms:inputgroup before="@">
                 <input placeholder="Username">

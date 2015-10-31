@@ -1,7 +1,7 @@
 {
-  "name": "btngroup",
+  "name": "inputgroup",
   "version": "1.0.0",
-  "description": "bootstrap btngroup",
+  "description": "bootstrap inputgroup",
   "main": "main.js",
   "dependencies": {},
   "devDependencies": {

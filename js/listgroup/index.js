@@ -1,8 +1,6 @@
 require("avalon")
 require("../button/button")
-require("../dropdown/dropdown")
-
-require("./btngroup")
+require("./listgroup")
 
 require("bootstrap.css")
 avalon.define({
