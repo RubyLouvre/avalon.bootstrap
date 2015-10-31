@@ -1,5 +1,5 @@
 var avalon = require("avalon")
-
+var $ = require("../selector/selector")
 avalon.component("ms:listgroup", {
     $slot: "content",
     content: "",
@@ -15,12 +15,16 @@ avalon.component("ms:listgroup", {
         var root = avalon(element)
         root.addClass("list-group")
         normailizeMenu(element.childNodes)
+        $(".list-group-item > .label", element).forEach(function(el){
+           avalon(el).addClass("pull-right")
+        })
     }
 })
 function normailizeMenu(elems) {
     for (var i = 0, el; el = elems[i++]; ) {
         if (el.nodeType === 1) {
             avalon(el).addClass("list-group-item")
+            
         }
     }
 }
