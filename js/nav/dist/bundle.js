@@ -46,10 +46,11 @@
 
 	var avalon = __webpack_require__(1)
 	__webpack_require__(2)
-
 	__webpack_require__(4)
 
-	__webpack_require__(7)
+	__webpack_require__(5)
+
+	__webpack_require__(8)
 	avalon.define({
 	    $id: "test"
 	})
@@ -65,7 +66,7 @@
 	 http://weibo.com/jslouvre/
 	 
 	 Released under the MIT license
-	 avalon.shim.js 1.5.5 built in 2015.10.27
+	 avalon.shim.js 1.5.5 built in 2015.10.31
 	 support IE6+ and other browsers
 	 ==================================================*/
 	(function(global, factory) {
@@ -1184,7 +1185,7 @@
 	}
 
 	function observeObject(source, options) {
-	    if (!source || (source.$id && source.$accessors)) {
+	    if (!source || (source.$id && source.$accessors) || (source.nodeName && source.nodeType > 0)) {
 	        return source
 	    }
 	    //source为原对象,不能是元素节点或null
@@ -1237,7 +1238,7 @@
 	        var value = source[name]
 	        if (!$$skipArray[name])
 	            hasOwn[name] = true
-	        if (typeof value === "function" || (value && value.nodeType) ||
+	        if (typeof value === "function" || (value && value.nodeName && value.nodeType > 0) ||
 	                (!force[name] && (name.charAt(0) === "$" || $$skipArray[name] || $skipArray[name]))) {
 	            skip.push(name)
 	        } else if (isComputed(value)) {
@@ -3240,7 +3241,7 @@
 	    for (var i = 0, node; node = nodes[i++]; ) {
 	        switch (node.nodeType) {
 	            case 1:
-	                var elem = node, fn
+	                var elem = node
 	                if (!elem.msResolved && elem.parentNode && elem.parentNode.nodeType === 1) {
 	                    var library = isWidget(elem)
 	                    if (library) {
@@ -3259,7 +3260,9 @@
 	                        }
 	                    }
 	                }
-	                 scanTag(node, vmodels) //扫描元素节点
+	               
+	                scanTag(node, vmodels) //扫描元素节点
+	                
 	                if (node.msHasEvent) {
 	                    avalon.fireDom(node, "datasetchanged", {
 	                        bubble: node.msHasEvent
@@ -4011,7 +4014,6 @@
 	                    if (val + "" !== binding.oldValue) {
 	                        try {
 	                            binding.setter(val)
-	                            callback.call(elem, val)
 	                        } catch (ex) {
 	                            log(ex)
 	                        }
@@ -4068,10 +4070,13 @@
 	                if (curValue !== this.oldValue) {
 	                    var fixCaret = false
 	                    if (elem.msFocus) {
-	                        var pos = getCaret(elem)
-	                        if (pos.start === pos.end) {
-	                            pos = pos.start
-	                            fixCaret = true
+	                        try {
+	                            var pos = getCaret(elem)
+	                            if (pos.start === pos.end) {
+	                                pos = pos.start
+	                                fixCaret = true
+	                            }
+	                        } catch (e) {
 	                        }
 	                    }
 	                    elem.value = this.oldValue = curValue
@@ -4102,10 +4107,10 @@
 	            case "select":
 	                //必须变成字符串后才能比较
 	                binding._value = value
-	                if(!elem.msHasEvent){
+	                if (!elem.msHasEvent) {
 	                    elem.msHasEvent = "selectDuplex"
 	                    //必须等到其孩子准备好才触发
-	                }else{
+	                } else {
 	                    avalon.fireDom(elem, "datasetchanged", {
 	                        bubble: elem.msHasEvent
 	                    })
@@ -4113,7 +4118,7 @@
 	                break
 	        }
 	        if (binding.xtype !== "select") {
-	            binding.changed.call(elem, curValue,binding)
+	            binding.changed.call(elem, curValue, binding)
 	        }
 	    }
 	})
@@ -4251,7 +4256,7 @@
 	            var range = ctrl.createTextRange()
 	            range.collapse(true);
 	            range.moveStart("character", begin)
-	           // range.moveEnd("character", end) #1125
+	            // range.moveEnd("character", end) #1125
 	            range.select()
 	        }, 17)
 	    } else {
@@ -6085,8 +6090,302 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var avalon = __webpack_require__(1)
-	var $ = __webpack_require__(5)
-	__webpack_require__(6)
+	var dropdowns = []
+	var backdrops = []
+	var ClassName = {
+	    BACKDROP: 'dropdown-backdrop',
+	    DISABLED: 'disabled',
+	    OPEN: 'open'
+	}
+	avalon.component("ms:dropdown", {
+	    $slot: "content",
+	    content: "",
+	    $template: "{{content|html}}",
+	    onHide: avalon.noop,
+	    onHidden: avalon.noop,
+	    onShow: avalon.noop,
+	    onShown: avalon.noop,
+	    onInit: avalon.noop,
+	    $skipArray: ["_trigger", "_element"],
+	    open: false,
+	    _trigger: {},
+	    _element: {},
+	    $dispose: function (vm, element) {
+	        vm._element = vm._trigger = null
+	        avalon.Array.remove(dropdowns, vm)
+	        element["ms-dropdown-vm"] = void 0
+	        element.innerHTML = ""
+	    },
+	    
+	    $ready: function (vm, element) {
+	        var trigger = getPrevElement(element)
+	        if (!trigger) {
+	            throw "<ms:dropdown>元素前面必须存在元素节点"
+	        }
+	        var parent = element.parentNode
+
+	        avalon(parent).addClass("dropdown")
+
+	        avalon(trigger).addClass("toggle-dropdown").
+	                attr("data-toggle", "dropdown")
+	        vm._trigger = trigger
+	        avalon(element).addClass("dropdown-menu").
+	                attr("role", "menu")
+
+
+	        element["ms-dropdown-vm"] = vm
+
+	        vm._element = element
+	        if (vm.menuRight) {
+	            avalon(element).addClass("dropdown-menu-right")
+	        }
+
+	        normailizeMenu(element.childNodes)
+
+
+	        function switchOpen(a) {
+	            avalon(parent).toggleClass(ClassName.OPEN, a)
+
+	            trigger.setAttribute("aria-expanded", a)
+	            if (a) {
+	                parent.setAttribute(ClassName.OPEN, true)
+	            } else {
+	                parent.removeAttribute(ClassName.OPEN)
+	            }
+	        }
+
+	        avalon.Array.ensure(dropdowns, vm)
+	        
+	        if (avalon(parent).hasClass(ClassName.OPEN)) {
+	            vm.open = true
+	        }
+	        
+	        switchOpen(vm.open)
+
+	        vm.$watch(ClassName.OPEN, switchOpen)
+	        vm.onInit(vm)
+
+	    },
+	    keydownHandler: function (event) {
+
+	        // this可能为trigger或 menu
+	        if (!/(38|40|27|32)/.test(event.which) || /input|textarea/i.test(event.target.tagName)) {
+	            return
+	        }
+
+	        event.preventDefault()
+	        event.stopPropagation()
+
+	        if (this.disabled || avalon(this).hasClass(ClassName.DISABLED)) {
+	            return
+	        }
+	        var menu = this
+	        if (avalon(this).hasClass("toggle-dropdown")) {
+	            menu = getNextElement(menu)
+	            if (!menu)
+	                return
+	        }
+
+	        var vm = menu["ms-dropdown-vm"]
+	        var isActive = vm.open
+
+	        if (!isActive && event.which !== 27 || isActive && event.which === 27) {
+	            if (event.which === 27) {
+	                var trigger = vm._trigger
+	                avalon.fireDom(trigger, "focus")
+	            }
+	            avalon.fireDom(this, "click")
+	            return
+	        }
+	        var children = menu.children, items = []
+	        for (var i = 0, el; el = children[i++]; ) {
+	            if ((el.offsetWidth || el.offsetHeight) &&
+	                    !el.disabled &&
+	                    /\bdropdown\-item\b/.test(el.className) &&
+	                    !/\disabled\b/.test(el.className)
+	                    ) {
+	                items.push(el)
+	            }
+	        }
+
+	        if (!items.length) {
+	            return
+	        }
+
+	        var index = items.indexOf(event.target)
+	        if (!~index) {
+	            index = 0
+	        }
+	        if (event.which === 38) {
+	            // up
+	            index--;
+	            if (index === -1) {
+	                index = items.length - 1
+	            }
+	        }
+
+	        if (event.which === 40) {
+	            // down
+	            index++
+	            if (index === items.length) {
+	                index = 0
+	            }
+	        }
+
+	        items[index].focus()
+	    },
+	    toggle: function () {
+	        //this 为 trigger
+	        if (this.disabled || avalon(this).hasClass(ClassName.DISABLED)) {
+	            return false
+	        }
+
+	        var menu = getNextElement(this)
+	       
+	        if (!menu)
+	            return
+	        var vm = menu["ms-dropdown-vm"]
+	        var isActive = vm.open
+
+	        avalon.components["ms:dropdown"]._clearMenus(0)
+	        if (isActive) {
+	            return false
+	        }
+
+	        if ('ontouchstart' in document.documentElement) {
+	            // if mobile we use a backdrop because click events don't delegate
+	            var backdrop = document.createElement('div')
+	            backdrop.className = ClassName.BACKDROP
+	            this.parentNode.insertBefore(backdrop, this)
+	            avalon(backdrop).bind('click', avalon.components["ms:dropdown"]._clearMenus)
+	            backdrops.push(backdrop)
+	        }
+	        var ret = vm.onShow.call(menu, vm)
+	        if (ret === false) {
+	            return false
+	        }
+	        this.focus()
+	        vm.open = true
+	        vm.onShown.call(menu, vm)
+
+	    },
+	    _clearMenus: function (event) {//关闭页面上所有菜单
+	        if (event && event.which === 3) {//右键
+	            return;
+	        }
+	        if (backdrops.length) {
+	            var backdrop = backdrops[0]
+	            backdrop.parentNode.removeChild(backdrop);
+	        }
+
+	        for (var i = 0; i < dropdowns.length; i++) {
+	            var vm = dropdowns[i]
+	            var menu = vm._element
+
+	            if (!vm.open) {
+	                continue
+	            }
+	            if (event && event.type === 'click' &&
+	                    avalon.contains(menu.parentNode, event.target)) {
+	                continue
+	            }
+	            var ret = vm.onHide.call(menu, vm)
+
+	            if (ret === false) {
+	                continue
+	            }
+
+	            vm.open = false
+
+	            vm.onHidden.call(menu, vm)
+
+	        }
+	    }
+	})
+	var rdropdown = /\bdropdown\-(item|divider|header)\b/
+	function normailizeMenu(elems) {
+	    for (var i = 0, el; el = elems[i++]; ) {
+	        if (el.nodeType === 1) {
+	            if (!rdropdown.test(el.className)) {
+	                switch (el.nodeName.toLowerCase()) {
+	                    case "button":
+	                    case "a":
+	                        avalon(el).addClass("dropdown-item")
+	                        break
+	                    case "div":
+	                        avalon(el).addClass("dropdown-divider")
+	                        break
+	                    case "h1":
+	                    case "h2":
+	                    case "h3":
+	                    case "h4":
+	                    case "h5":
+	                    case "h6":
+	                        avalon(el).addClass("dropdown-header")
+	                        break
+	                }
+	            }
+	        }
+	    }
+	}
+	function getNextElement(node) {
+	    node = node.nextSibling
+	    while (node.nodeType !== 1) {
+	        node = node.nextSibling
+	    }
+	    return node
+	}
+
+	function getPrevElement(node) {
+	    node = node.previousSibling
+	    while (node.nodeType !== 1) {
+	        node = node.previousSibling
+	    }
+	    return node
+	}
+
+	function getDropDownParent(target) {
+	    var parent = target.parentNode
+	    if (avalon(parent).hasClass("dropdown"))
+	        return parent
+	    return null
+	}
+
+	function delegate(event) {
+	    var target = event.target
+	    var eventType = event.type
+	    while (target && target.nodeType === 1) {
+	        var isTigger = target.getAttribute("data-toggle") === "dropdown"
+	        var isMenu = /^(menu|listbox)$/.test(target.getAttribute("role"))
+	        if (eventType === "keydown" && (isTigger || isMenu)) {
+	            avalon.components["ms:dropdown"].keydownHandler.call(target, event)
+	            break
+	        }
+	        if (eventType === "click" && isTigger) {
+	            avalon.components["ms:dropdown"].toggle.call(target, event)
+	            break
+	        }
+	        target = target.parentNode
+	    }
+
+	}
+	avalon(document).bind("click", delegate)
+	avalon(document).bind("keydown", delegate)
+	avalon(document).bind("click", avalon.components["ms:dropdown"]._clearMenus)
+
+
+
+	module.exports = avalon
+	// 文档 http://v4-alpha.getbootstrap.com/components/buttons/
+	// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var avalon = __webpack_require__(1)
+	var $ = __webpack_require__(6)
+	__webpack_require__(7)
 
 	var ClassName = {
 	    DROPDOWN_MENU: 'dropdown-menu',
@@ -6106,21 +6405,30 @@
 	    onHide: avalon.noop,
 	    onHidden: avalon.noop,
 	    onInit: avalon.noop,
+	    activeIndex: NaN,
 	    $ready: function (vm, element) {
 	        var root = avalon(element)
 	        vm._element = element
 	        element["ms-nav-vm"] = vm
-	        normailizeMenu(element)
+	        var menu = normailizeMenu(element)
 	        if (/(tabs|pills)/.test(vm.type)) {
 	            root.addClass("nav-" + vm.type)
+	        }
+	        if (vm.type === "tabs") {
+	            root.attr("role", "tablist")
 	        }
 	        if (vm.stacked) {
 	            root.addClass("nav-stacked")
 	        }
+	        var needActive = menu[vm.activeIndex]
+
+	        if (needActive) {
+	            this.show(needActive)
+	        }
 	        vm.onInit(vm)
 	    },
 	    show: function (elem) {
-	        console.log("show....")
+
 	        var _this = this //切换页面
 
 	        if (avalon(elem).hasClass(ClassName.ACTIVE)) {
@@ -6141,13 +6449,16 @@
 	        if (hideRet === false || showRet === false) {
 	            return
 	        }
-	        console.log(elem)
-	        if (elem.getAttribute("data-toggle")) {
+	        var hasToggle = elem.getAttribute("data-toggle")
+
+	        if (hasToggle) {
+
 	            var id = elem.getAttribute("href", 2) || elem.getAttribute("data-target")
 	            if (id && id.length > 2 && id.charAt("0") === "#") {
 	                //target为要打开切换卡面板或下拉菜单
 	                var target = document.getElementById(id.slice(1))
 	            }
+
 	        }
 
 	        this._activate(elem, root)
@@ -6192,15 +6503,7 @@
 	    _transitionComplete: function (element, active, isTransitioning, callback) {
 	        if (active) {
 	            avalon(active).removeClass(ClassName.ACTIVE);
-	            //处理下拉菜单
-	            avalon.each(active.children, function (el) {
-	                if (avalon(el).hasClass("dropdown-menu")) {
-	                    var ativeItem = $(ClassName.ACTIVE, el)[0]
-	                    if (ativeItem) {
-	                        avalon(ativeItem).removeClass(ClassName.ACTIVE)
-	                    }
-	                }
-	            })
+
 
 	            active.setAttribute('aria-expanded', false)
 	        }
@@ -6214,34 +6517,20 @@
 	        } else {
 	            avalon(element).removeClass(ClassName.FADE);
 	        }
-	        //打开菜单 
-	        if (element.parentNode && avalon(element.parentNode).hasClass(ClassName.DROPDOWN_MENU)) {
-	            var p = element.parentNode, dropdownElement
-	            while (p) {
-	                if (avalon(p).hasClass("dropdown")) {
-	                    //  $(dropdownElement).find(Selector.DROPDOWN_TOGGLE).addClass(ClassName.ACTIVE);
-	                    break
-	                }
-	            }
 
-
-
-	            element.setAttribute('aria-expanded', true);
-	        }
 
 	        if (callback) {
 	            callback();
 	        }
 	    }
 
-	    // static
 
 
 	})
 
 
 	function normailizeMenu(elem) {
-	    var items = $("li", elem)
+	    var items = $("li", elem), ret = []
 	    items = items.filter(function (el) {
 	        return el.parentNode === elem
 	    }).forEach(function (el) {
@@ -6249,8 +6538,13 @@
 	        var a = el.children[0]
 	        if (a && a.nodeName === "A") {
 	            avalon(a).addClass("nav-link")
+	            if (!a.getAttribute("data-toggle")) {
+	                a.setAttribute("data-toggle", "tab")
+	            }
+	            ret.push(a)
 	        }
 	    })
+	    return ret
 	}
 
 	function delegate(event) {
@@ -6260,8 +6554,6 @@
 	            event.preventDefault()
 	            if (avalon(tigger).hasClass("disabled"))
 	                return
-	            //   }
-	            //  if (/^(tab|pill)$/.test(tigger.getAttribute("data-toggle"))) {
 
 	            var _target = tigger
 	            while (tigger && tigger.nodeType === 1) {
@@ -6293,7 +6585,7 @@
 	 */
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports) {
 
 	
@@ -6508,7 +6800,7 @@
 	 */
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var avalon = __webpack_require__(1)
@@ -6533,16 +6825,16 @@
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(8);
+	var content = __webpack_require__(9);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(10)(content, {});
+	var update = __webpack_require__(11)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6559,10 +6851,10 @@
 	}
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(9)();
+	exports = module.exports = __webpack_require__(10)();
 	// imports
 
 
@@ -6573,7 +6865,7 @@
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports) {
 
 	/*
@@ -6629,7 +6921,7 @@
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*

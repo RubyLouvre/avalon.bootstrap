@@ -46,9 +46,9 @@
 
 	__webpack_require__(1)
 	__webpack_require__(2)
-	__webpack_require__(3)
-
 	__webpack_require__(4)
+
+	__webpack_require__(5)
 	avalon.define({
 	    $id: "test"
 	})
@@ -64,7 +64,7 @@
 	 http://weibo.com/jslouvre/
 	 
 	 Released under the MIT license
-	 avalon.shim.js 1.5.5 built in 2015.10.27
+	 avalon.shim.js 1.5.5 built in 2015.10.31
 	 support IE6+ and other browsers
 	 ==================================================*/
 	(function(global, factory) {
@@ -1183,7 +1183,7 @@
 	}
 
 	function observeObject(source, options) {
-	    if (!source || (source.$id && source.$accessors)) {
+	    if (!source || (source.$id && source.$accessors) || (source.nodeName && source.nodeType > 0)) {
 	        return source
 	    }
 	    //source为原对象,不能是元素节点或null
@@ -1236,7 +1236,7 @@
 	        var value = source[name]
 	        if (!$$skipArray[name])
 	            hasOwn[name] = true
-	        if (typeof value === "function" || (value && value.nodeType) ||
+	        if (typeof value === "function" || (value && value.nodeName && value.nodeType > 0) ||
 	                (!force[name] && (name.charAt(0) === "$" || $$skipArray[name] || $skipArray[name]))) {
 	            skip.push(name)
 	        } else if (isComputed(value)) {
@@ -3239,7 +3239,7 @@
 	    for (var i = 0, node; node = nodes[i++]; ) {
 	        switch (node.nodeType) {
 	            case 1:
-	                var elem = node, fn
+	                var elem = node
 	                if (!elem.msResolved && elem.parentNode && elem.parentNode.nodeType === 1) {
 	                    var library = isWidget(elem)
 	                    if (library) {
@@ -3258,7 +3258,9 @@
 	                        }
 	                    }
 	                }
-	                 scanTag(node, vmodels) //扫描元素节点
+	         
+	                scanTag(node, vmodels) //扫描元素节点
+	         
 	                if (node.msHasEvent) {
 	                    avalon.fireDom(node, "datasetchanged", {
 	                        bubble: node.msHasEvent
@@ -4010,7 +4012,6 @@
 	                    if (val + "" !== binding.oldValue) {
 	                        try {
 	                            binding.setter(val)
-	                            callback.call(elem, val)
 	                        } catch (ex) {
 	                            log(ex)
 	                        }
@@ -4067,10 +4068,13 @@
 	                if (curValue !== this.oldValue) {
 	                    var fixCaret = false
 	                    if (elem.msFocus) {
-	                        var pos = getCaret(elem)
-	                        if (pos.start === pos.end) {
-	                            pos = pos.start
-	                            fixCaret = true
+	                        try {
+	                            var pos = getCaret(elem)
+	                            if (pos.start === pos.end) {
+	                                pos = pos.start
+	                                fixCaret = true
+	                            }
+	                        } catch (e) {
 	                        }
 	                    }
 	                    elem.value = this.oldValue = curValue
@@ -4101,10 +4105,10 @@
 	            case "select":
 	                //必须变成字符串后才能比较
 	                binding._value = value
-	                if(!elem.msHasEvent){
+	                if (!elem.msHasEvent) {
 	                    elem.msHasEvent = "selectDuplex"
 	                    //必须等到其孩子准备好才触发
-	                }else{
+	                } else {
 	                    avalon.fireDom(elem, "datasetchanged", {
 	                        bubble: elem.msHasEvent
 	                    })
@@ -4112,7 +4116,7 @@
 	                break
 	        }
 	        if (binding.xtype !== "select") {
-	            binding.changed.call(elem, curValue,binding)
+	            binding.changed.call(elem, curValue, binding)
 	        }
 	    }
 	})
@@ -4250,7 +4254,7 @@
 	            var range = ctrl.createTextRange()
 	            range.collapse(true);
 	            range.moveStart("character", begin)
-	           // range.moveEnd("character", end) #1125
+	            // range.moveEnd("character", end) #1125
 	            range.select()
 	        }, 17)
 	    } else {
@@ -5919,7 +5923,7 @@
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var avalon = __webpack_require__(1)
+	var avalon = __webpack_require__(3)
 
 	avalon.component("ms:button", {
 	    color: "primary", //primary secondary success warning danger link
@@ -6013,46 +6017,18 @@
 	}
 	avalon(document).bind("click", delegate)
 
-
-	avalon.ready(function () {
-	    var supportFocusin = !!document.body.attachEvent
-	    if (!supportFocusin) {
-	        function swap() {
-	            supportFocusin = true
-	        }
-	        var a = document.createElement('a') // create test element
-	        a.style.visibility = "hidden"
-	        a.href = "#" // to make it focusable
-	        a.addEventListener('focusin', swap, false); // bind focusin
-	        document.body.appendChild(a) // append
-	        a.focus() // focus
-	        document.body.removeChild(a) // remove again
-	    }
-
-	    if (!supportFocusin) {
-	        avalon.log("当前浏览器不支持focusin")
-	        avalon.each({
-	            focusin: "focus",
-	            focusout: "blur"
-	        }, function (origType, fixType) {
-	            avalon.eventHooks[origType] = {
-	                type: fixType,
-	                phase: true
-	            }
-	        })
-	    }
-	    avalon(document).bind("focusin", function (event) {
-	        delegate(event, function (button) {
-	            avalon(button).addClass("focus")
-	        })
+	avalon(document).bind("focusin", function (event) {
+	    delegate(event, function (button) {
+	        avalon(button).addClass("focus")
 	    })
-	    avalon(document).bind("focusout", function (event) {
-	        delegate(event, function (button) {
-	            avalon(button).removeClass("focus")
-	        })
-	    })
-
 	})
+
+	avalon(document).bind("focusout", function (event) {
+	    delegate(event, function (button) {
+	        avalon(button).removeClass("focus")
+	    })
+	})
+
 
 
 	module.exports = avalon
@@ -6061,6 +6037,54 @@
 
 /***/ },
 /* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* 
+	 * 
+	 *检测对focusin/focusout的支持,不支持进行修复
+	 *
+	 *http://www.cnblogs.com/snandy/archive/2011/07/19/2110393.html
+	 */
+	var avalon = __webpack_require__(1)
+	function supportEvent(eventName, element) {
+	    var isSupported;
+	    eventName = 'on' + eventName
+	    isSupported = eventName in element
+
+	    if (!isSupported && element.setAttribute) {
+	        element.setAttribute(eventName, '')
+	        isSupported = typeof element[eventName] === 'function'
+	        if (element[eventName] !== void 0) {
+	            element[eventName] = void 0
+	        }
+	        element.removeAttribute(eventName)
+	    }
+	    return isSupported
+	}
+	var supportFocusin = !!(document.documentElement.uniqueID || window.VBArray || window.opera || window.chrome)
+	if (!supportFocusin) {
+	    var a = document.createElement('a') 
+	    a.href = "#"
+	    supportFocusin = supportEvent("focusin", a)
+	}
+	if (!supportFocusin) {
+	    avalon.log("当前浏览器不支持focusin")
+	    avalon.each({
+	        focusin: "focus",
+	        focusout: "blur"
+	    }, function (origType, fixType) {
+	        avalon.eventHooks[origType] = {
+	            type: fixType,
+	            phase: true
+	        }
+	    })
+	}
+
+	module.exports = avalon
+
+
+/***/ },
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var avalon = __webpack_require__(1)
@@ -6098,16 +6122,16 @@
 	// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(5);
+	var content = __webpack_require__(6);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(7)(content, {});
+	var update = __webpack_require__(8)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6124,10 +6148,10 @@
 	}
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(6)();
+	exports = module.exports = __webpack_require__(7)();
 	// imports
 
 
@@ -6138,7 +6162,7 @@
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports) {
 
 	/*
@@ -6194,7 +6218,7 @@
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*

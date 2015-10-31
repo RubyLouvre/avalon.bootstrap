@@ -5,7 +5,7 @@
  http://weibo.com/jslouvre/
  
  Released under the MIT license
- avalon.shim.js 1.5.5 built in 2015.10.27
+ avalon.shim.js 1.5.5 built in 2015.10.31
  support IE6+ and other browsers
  ==================================================*/
 (function(global, factory) {
@@ -1124,7 +1124,7 @@ function Component() {
 }
 
 function observeObject(source, options) {
-    if (!source || (source.$id && source.$accessors)) {
+    if (!source || (source.$id && source.$accessors) || (source.nodeName && source.nodeType > 0)) {
         return source
     }
     //source为原对象,不能是元素节点或null
@@ -1177,7 +1177,7 @@ function observeObject(source, options) {
         var value = source[name]
         if (!$$skipArray[name])
             hasOwn[name] = true
-        if (typeof value === "function" || (value && value.nodeType) ||
+        if (typeof value === "function" || (value && value.nodeName && value.nodeType > 0) ||
                 (!force[name] && (name.charAt(0) === "$" || $$skipArray[name] || $skipArray[name]))) {
             skip.push(name)
         } else if (isComputed(value)) {
@@ -3180,7 +3180,7 @@ function scanNodeArray(nodes, vmodels) {
     for (var i = 0, node; node = nodes[i++]; ) {
         switch (node.nodeType) {
             case 1:
-                var elem = node, fn
+                var elem = node
                 if (!elem.msResolved && elem.parentNode && elem.parentNode.nodeType === 1) {
                     var library = isWidget(elem)
                     if (library) {
@@ -3199,7 +3199,9 @@ function scanNodeArray(nodes, vmodels) {
                         }
                     }
                 }
-                 scanTag(node, vmodels) //扫描元素节点
+               
+                scanTag(node, vmodels) //扫描元素节点
+                
                 if (node.msHasEvent) {
                     avalon.fireDom(node, "datasetchanged", {
                         bubble: node.msHasEvent
@@ -3951,7 +3953,6 @@ var duplexBinding = avalon.directive("duplex", {
                     if (val + "" !== binding.oldValue) {
                         try {
                             binding.setter(val)
-                            callback.call(elem, val)
                         } catch (ex) {
                             log(ex)
                         }
@@ -4008,10 +4009,13 @@ var duplexBinding = avalon.directive("duplex", {
                 if (curValue !== this.oldValue) {
                     var fixCaret = false
                     if (elem.msFocus) {
-                        var pos = getCaret(elem)
-                        if (pos.start === pos.end) {
-                            pos = pos.start
-                            fixCaret = true
+                        try {
+                            var pos = getCaret(elem)
+                            if (pos.start === pos.end) {
+                                pos = pos.start
+                                fixCaret = true
+                            }
+                        } catch (e) {
                         }
                     }
                     elem.value = this.oldValue = curValue
@@ -4042,10 +4046,10 @@ var duplexBinding = avalon.directive("duplex", {
             case "select":
                 //必须变成字符串后才能比较
                 binding._value = value
-                if(!elem.msHasEvent){
+                if (!elem.msHasEvent) {
                     elem.msHasEvent = "selectDuplex"
                     //必须等到其孩子准备好才触发
-                }else{
+                } else {
                     avalon.fireDom(elem, "datasetchanged", {
                         bubble: elem.msHasEvent
                     })
@@ -4053,7 +4057,7 @@ var duplexBinding = avalon.directive("duplex", {
                 break
         }
         if (binding.xtype !== "select") {
-            binding.changed.call(elem, curValue,binding)
+            binding.changed.call(elem, curValue, binding)
         }
     }
 })
@@ -4191,7 +4195,7 @@ function setCaret(ctrl, begin, end) {
             var range = ctrl.createTextRange()
             range.collapse(true);
             range.moveStart("character", begin)
-           // range.moveEnd("character", end) #1125
+            // range.moveEnd("character", end) #1125
             range.select()
         }, 17)
     } else {

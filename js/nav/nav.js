@@ -20,21 +20,30 @@ avalon.component("ms:nav", {
     onHide: avalon.noop,
     onHidden: avalon.noop,
     onInit: avalon.noop,
+    activeIndex: NaN,
     $ready: function (vm, element) {
         var root = avalon(element)
         vm._element = element
         element["ms-nav-vm"] = vm
-        normailizeMenu(element)
+        var menu = normailizeMenu(element)
         if (/(tabs|pills)/.test(vm.type)) {
             root.addClass("nav-" + vm.type)
+        }
+        if (vm.type === "tabs") {
+            root.attr("role", "tablist")
         }
         if (vm.stacked) {
             root.addClass("nav-stacked")
         }
+        var needActive = menu[vm.activeIndex]
+
+        if (needActive) {
+            this.show(needActive)
+        }
         vm.onInit(vm)
     },
     show: function (elem) {
-        console.log("show....")
+
         var _this = this //切换页面
 
         if (avalon(elem).hasClass(ClassName.ACTIVE)) {
@@ -56,16 +65,13 @@ avalon.component("ms:nav", {
             return
         }
         var hasToggle = elem.getAttribute("data-toggle")
-        console.log(elem)
-        if (hasToggle) {
-            if (hasToggle === "dropdown") {
 
-            } else {
-                var id = elem.getAttribute("href", 2) || elem.getAttribute("data-target")
-                if (id && id.length > 2 && id.charAt("0") === "#") {
-                    //target为要打开切换卡面板或下拉菜单
-                    var target = document.getElementById(id.slice(1))
-                }
+        if (hasToggle) {
+
+            var id = elem.getAttribute("href", 2) || elem.getAttribute("data-target")
+            if (id && id.length > 2 && id.charAt("0") === "#") {
+                //target为要打开切换卡面板或下拉菜单
+                var target = document.getElementById(id.slice(1))
             }
 
         }
@@ -112,15 +118,7 @@ avalon.component("ms:nav", {
     _transitionComplete: function (element, active, isTransitioning, callback) {
         if (active) {
             avalon(active).removeClass(ClassName.ACTIVE);
-            //处理下拉菜单
-            avalon.each(active.children, function (el) {
-                if (avalon(el).hasClass("dropdown-menu")) {
-                    var ativeItem = $(ClassName.ACTIVE, el)[0]
-                    if (ativeItem) {
-                        avalon(ativeItem).removeClass(ClassName.ACTIVE)
-                    }
-                }
-            })
+
 
             active.setAttribute('aria-expanded', false)
         }
@@ -134,34 +132,20 @@ avalon.component("ms:nav", {
         } else {
             avalon(element).removeClass(ClassName.FADE);
         }
-        //打开菜单 
-        if (element.parentNode && avalon(element.parentNode).hasClass(ClassName.DROPDOWN_MENU)) {
-            var p = element.parentNode, dropdownElement
-            while (p) {
-                if (avalon(p).hasClass("dropdown")) {
-                    //  $(dropdownElement).find(Selector.DROPDOWN_TOGGLE).addClass(ClassName.ACTIVE);
-                    break
-                }
-            }
 
-
-
-            element.setAttribute('aria-expanded', true);
-        }
 
         if (callback) {
             callback();
         }
     }
 
-    // static
 
 
 })
 
 
 function normailizeMenu(elem) {
-    var items = $("li", elem)
+    var items = $("li", elem), ret = []
     items = items.filter(function (el) {
         return el.parentNode === elem
     }).forEach(function (el) {
@@ -169,8 +153,13 @@ function normailizeMenu(elem) {
         var a = el.children[0]
         if (a && a.nodeName === "A") {
             avalon(a).addClass("nav-link")
+            if (!a.getAttribute("data-toggle")) {
+                a.setAttribute("data-toggle", "tab")
+            }
+            ret.push(a)
         }
     })
+    return ret
 }
 
 function delegate(event) {
@@ -180,8 +169,6 @@ function delegate(event) {
             event.preventDefault()
             if (avalon(tigger).hasClass("disabled"))
                 return
-            //   }
-            //  if (/^(tab|pill)$/.test(tigger.getAttribute("data-toggle"))) {
 
             var _target = tigger
             while (tigger && tigger.nodeType === 1) {
