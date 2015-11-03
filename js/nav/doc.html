@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>dropdown</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="dist/bundle.js"></script>
+        <style>
+            ms\:dropdown{
+                /*                display: block; 
+                                top:0px;
+                                left:0px;*/
+            }
+            body{
+                padding:2em
+            }
+        </style>
+    </head>
+    <body ms-controller="test">
+        <p>
+            Bootstrap 标签页（Tab）插件 标签页（Tab）在 Bootstrap 导航元素 一章中介绍过。
+            通过结合一些 data 属性，您可以轻松地创建一个标签页界面。通过这个插件您可以把内容放置在标签页或者是胶囊式标签页甚至是下拉菜单标签页中。 
+            如果您想要单独引用该插件的功能，那么您需要引用 tab.js。
+        </p>
+        <table width="100%">
+            <tr>
+                <td>
+                    <ul class="nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Link</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Link</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Another link</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link disabled" href="#">Disabled</a>
+                        </li>
+                    </ul>
+            <xmp>
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Link</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Link</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Another link</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link disabled" href="#">Disabled</a>
+                    </li>
+                </ul>
+            </xmp>
+        </td>
+        <td>
+            <nav class="nav">
+                <a class="nav-link active" href="#">Active</a>
+                <a class="nav-link" href="#">Link</a>
+                <a class="nav-link" href="#">Another link</a>
+                <a class="nav-link disabled" href="#">Disabled</a>
+            </nav>
+        <xmp>
+            <nav class="nav">
+                <a class="nav-link active" href="#">Active</a>
+                <a class="nav-link" href="#">Link</a>
+                <a class="nav-link" href="#">Another link</a>
+                <a class="nav-link disabled" href="#">Disabled</a>
+            </nav>
+        </xmp>
+    </td>
+</tr>
+</table>
+
+<br/>
+<div>
+    <ms:nav role="tablist">
+        <li>
+            <a class="nav-link active" href="#aaa" >Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#bbb" >Profile</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#ccc" >Messages</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#ddd" >Settings</a>
+        </li>
+    </ms:nav>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="aaa">面板1</div>
+        <div role="tabpanel" class="tab-pane" id="bbb">面板2</div>
+        <div role="tabpanel" class="tab-pane" id="ccc">面板3</div>
+        <div role="tabpanel" class="tab-pane" id="ddd">面板4</div>
+    </div>
+</div>
+<div>
+    <ms:nav role="tablist" active-index="2">
+        <li>
+            <a class="nav-link" href="#home" >Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#profile" >Profile</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#messages" >Messages</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#settings" >Settings</a>
+        </li>
+    </ms:nav>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="home">AAA</div>
+        <div role="tabpanel" class="tab-pane" id="profile">BBB</div>
+        <div role="tabpanel" class="tab-pane" id="messages">CCC</div>
+        <div role="tabpanel" class="tab-pane" id="settings">DDD</div>
+    </div>
+</div>
+<ms:nav type="pills" >
+    <li class="nav-item">
+        <a href="#" class="nav-link active">Active</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" >Dropdown</a>
+    <ms:dropdown>
+        <a href="#">Action</a>
+        <a href="#">Another action</a>
+        <a href="#">Something else here</a>
+        <div class="dropdown-divider"></div>
+        <a href="#">Separated link</a>
+    </ms:dropdown>
+</li>
+<li class="nav-item">
+    <a href="#" class="nav-link">Another link</a>
+</li>
+<li class="nav-item">
+    <a href="#" class="nav-link disabled">Disabled</a>
+</li>
+</ms:nav>
+</body>
+</html>
+
+

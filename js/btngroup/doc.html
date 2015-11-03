@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>btngroup</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="dist/bundle.js"></script>
+        <style>
+            ms\:button input{
+                display: none; 
+            }
+            body{
+                padding:2em
+            }
+        </style>
+    </head>
+    <body ms-controller="test">
+        <h3>按钮组btngroup</h3>
+        <p>依赖于button组件,可以套嵌dropdown组件</p>
+        <div>
+            <ms:btngroup>
+                <ms:button color="secondary">
+                    Left
+                </ms:button>
+                <ms:dropdown>
+                    <button type="button">Action</button>
+                    <button type="button">Another action</button>
+                    <button type="button">Something else here</button>
+                </ms:dropdown>
+                <ms:button color="secondary">
+                    Middle
+                </ms:button>
+                <ms:button color="secondary">
+                    Right
+                </ms:button>
+            </ms:btngroup>
+
+        </div>
+        <div>
+            <p>通过指定size调整大小</p>
+            <ms:btngroup size="lg">
+                <ms:button color="warning">
+                    Left
+                </ms:button>
+                <ms:button color="warning">
+                    Middle
+                </ms:button>
+                <ms:button color="warning">
+                    Right
+                </ms:button>
+            </ms:btngroup><br/>
+            <ms:btngroup >
+                <ms:button color="danger">
+                    Left
+                </ms:button>
+                <ms:button color="danger">
+                    Middle
+                </ms:button>
+                <ms:button color="danger">
+                    Right
+                </ms:button>
+            </ms:btngroup><br/>
+            <ms:btngroup size="sm">
+                <ms:button color="secondary">
+                    Left
+                </ms:button>
+                <ms:button color="secondary">
+                    Middle
+                </ms:button>
+                <ms:button color="secondary">
+                    Right
+                </ms:button>
+            </ms:btngroup><br/>
+             <p>通过指定vertical=true实现按钮垂直排列</p>
+            <ms:btngroup size="xs" vertical='tre'>
+                <ms:button color="secondary">
+                    Left
+                </ms:button>
+                <ms:button color="secondary">
+                    Middle
+                </ms:button>
+                <ms:button color="secondary">
+                    Right
+                </ms:button>
+            </ms:btngroup>
+        </div>
+
+
+
+    </body>
+</html>

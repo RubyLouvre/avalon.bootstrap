@@ -1,0 +1,65 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node',
+1 verbose cli   '/usr/local/bin/npm',
+1 verbose cli   'link',
+1 verbose cli   'webpack',
+1 verbose cli   'css-loader',
+1 verbose cli   'style-loader',
+1 verbose cli   'url-loader' ]
+2 info using npm@3.3.5
+3 info using node@v0.12.7
+4 verbose link symlinking /usr/local/lib/node_modules/webpack to /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/webpack
+5 verbose link symlinking /usr/local/lib/node_modules/css-loader to /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/css-loader
+6 verbose link symlinking /usr/local/lib/node_modules/style-loader to /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/style-loader
+7 verbose link symlinking /usr/local/lib/node_modules/url-loader to /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/url-loader
+8 silly gentlyRm /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/webpack is being purged
+9 silly gentlyRm /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/css-loader is being purged
+10 silly gentlyRm /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/style-loader is being purged
+11 silly gentlyRm /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/url-loader is being purged
+12 verbose gentlyRm don't care about contents; nuking /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/webpack
+13 verbose gentlyRm don't care about contents; nuking /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/css-loader
+14 verbose gentlyRm don't care about contents; nuking /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/style-loader
+15 verbose gentlyRm don't care about contents; nuking /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/url-loader
+16 info build /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/webpack
+17 info build /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/css-loader
+18 info build /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/style-loader
+19 info build /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/url-loader
+20 info linkStuff style-loader@0.13.0
+21 silly linkStuff style-loader@0.13.0 has /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules as its parent node_modules
+22 info linkStuff css-loader@0.21.0
+23 silly linkStuff css-loader@0.21.0 has /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules as its parent node_modules
+24 info linkStuff webpack@1.12.2
+25 silly linkStuff webpack@1.12.2 has /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules as its parent node_modules
+26 info linkStuff url-loader@0.5.6
+27 silly linkStuff url-loader@0.5.6 has /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules as its parent node_modules
+28 verbose linkBins style-loader@0.13.0
+29 verbose linkMans style-loader@0.13.0
+30 verbose linkBins css-loader@0.21.0
+31 verbose linkMans css-loader@0.21.0
+32 verbose linkBins webpack@1.12.2
+33 verbose link bins [ { webpack: './bin/webpack.js' },
+33 verbose link bins   '/Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/.bin',
+33 verbose link bins   false ]
+34 verbose linkMans webpack@1.12.2
+35 verbose linkBins url-loader@0.5.6
+36 verbose linkMans url-loader@0.5.6
+37 silly gentlyRm /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/.bin/webpack is being purged
+38 verbose gentlyRm don't care about contents; nuking /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/.bin/webpack
+39 verbose stack Error: EPERM, chmod '/Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/webpack/bin/webpack.js'
+39 verbose stack     at Error (native)
+40 verbose cwd /Users/qitmac000408/avalon.bootstrap/js/dropdown
+41 error Darwin 14.5.0
+42 error argv "node" "/usr/local/bin/npm" "link" "webpack" "css-loader" "style-loader" "url-loader"
+43 error node v0.12.7
+44 error npm  v3.3.5
+45 error path /Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/webpack/bin/webpack.js
+46 error code EPERM
+47 error errno -1
+48 error Error: EPERM, chmod '/Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/webpack/bin/webpack.js'
+48 error     at Error (native)
+48 error  { [Error: EPERM, chmod '/Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/webpack/bin/webpack.js']
+48 error   errno: -1,
+48 error   code: 'EPERM',
+48 error   path: '/Users/qitmac000408/avalon.bootstrap/js/dropdown/node_modules/webpack/bin/webpack.js' }
+49 error Please try running this command again as root/Administrator.
+50 verbose exit [ -1, true ]

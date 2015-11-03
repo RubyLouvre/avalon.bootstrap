@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>dropdown</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="dist/bundle.js"></script>
+        <style>
+            ms\:dropdown{
+                /*                display: block; 
+                                top:0px;
+                                left:0px;*/
+            }
+            body{
+                padding:2em
+            }
+        </style>
+    </head>
+    <body ms-controller="test">
+
+
+        <p>dropdown组件包括三部分</p>
+        <p>【容器】带dropdown类与决定它显示与否的open类，</p>
+        <p>【触发按钮】，应该带dropdown-toggle类，</p>
+        <p>【菜单】应该带dropdown-menu类，</p>
+        <p>菜单下有三种元素,一种是a元素或button元素,框架给它们加上dropdown-item类名</p>
+        <p>第二种为强调用的title, 是h6元素, 框架给它们加上dropdown-header类名,它们还能添加disabled类名表示禁用.</p>
+        <p>第三种为分隔线, 是div元素, 框架给它们加上dropdown-divider类名</p>
+        <p>如果菜单的子元素已经添加了dropdown-*类名,那么框架就不会添加</p>
+    <xmp ms-skip="true">
+        <div>
+            <ms:button color='secondary'>
+                Dropdown
+            </ms:button>
+            <ms:dropdown>
+                <button type="button">Action</button>
+                <button type="button">Another action</button>
+                <button type="button">Something else here</button>
+            </ms:dropdown>
+        </div>
+    </xmp>
+    <div style="height:180px; width="100%"">
+        <table width="100%">
+            <tr>
+                <td>
+                    <div class="open">
+                        <ms:button color='secondary'>
+                            Dropdown
+                        </ms:button>
+                        <ms:dropdown>
+                            <button type="button">Action</button>
+                            <button type="button">Another action</button>
+                            <button type="button">Something else here</button>
+                        </ms:dropdown>
+                    </div>
+                    <br clear="both"/>
+                </td>
+                <td>
+                    <div>
+                        <ms:button color='secondary'>
+                            Dropdown
+                        </ms:button>
+                        <ms:dropdown open='true'>
+                            <h6 class="dropdown-header">Dropdown header</h6>
+                            <a href="#">Action</a>
+                            <a href="#">Another action</a>
+                        </ms:dropdown>
+                    </div>
+                    <br clear="both"/>
+
+                </td>
+                <td>
+                    <div>
+                        <ms:button color='secondary'>
+                            Dropdown
+                        </ms:button>
+                        <ms:dropdown>
+                            <a href="#">Action</a>
+                            <a href="#">Another action</a>
+                            <a href="#">Something else here</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#">Separated link</a>
+                        </ms:dropdown>
+                    </div>
+
+                    <br clear="both"/>
+                </td>
+                <td>
+                    <div>
+                        <ms:button color='secondary'>
+                            Dropdown
+                        </ms:button>
+                        <ms:dropdown open='true' menu-right="true">
+                            <a href="#">Action</a>
+                            <a class="disabled" href="#">Another action</a>
+                            <a href="#">Something else here</a>
+                            <div></div>
+                            <a href="#">Separated link</a>
+                        </ms:dropdown>
+                    </div>
+
+                    <br clear="both"/>
+                </td>
+            </tr>
+        </table>
+
+
+
+    </div>
+</body>
+</html>
+
+

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>input-group</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="dist/bundle.js"></script>
+        <style>
+            ms\:button input{
+                display: none; 
+            }
+            body{
+                padding:2em
+            }
+        </style>
+    </head>
+    <body ms-controller="test">
+        <h3>标签iabel</h3>
+        <p>在bootstarp4中,它是将原来的标签组件与徽章组件合并起来.</p>
+        <div>
+            <a href="#">Mailbox <ms:label pill="true">50</ms:label></a>
+            <a href="#">Mailbox <ms:label pill="true"></ms:label></a>
+
+            <p>当没有新的或未读的项时，通过 CSS 的 :empty 选择器，徽章会折叠起来，表示里边没有内容。</p>
+            <p>您可以在激活状态的胶囊式导航和列表导航中放置徽章。</p>
+            <h4>胶囊式导航中的激活状态</h4>
+
+            <ms:nav type="pills">
+                <li><a href="#" class="active"><ms:label pill="true" style="background:#fff;color:#000" class="pull-right">42</ms:label>首页</a></li>
+                <li><a href="#">简介</a></li>
+                <li><a href="#"><ms:label pill="true">3</ms:label>消息</a></li>
+            </ms:nav>
+            <br clear="both"/>
+            <h4>列表导航中的激活状态</h4>
+            <ms:nav class="nav-stacked nav-pills" style="max-width: 260px;">
+                <li>
+                    <a href="#" class="active">
+                       <ms:label pill="true" color="info" class="pull-right">42</ms:label>
+                        首页
+                    </a>
+                </li>
+                <li><a href="#">简介</a></li>
+                <li><a href="#"><ms:label pill="true">3</ms:label>消息</a></li>
+            </ms:nav>
+    </body>
+</html>

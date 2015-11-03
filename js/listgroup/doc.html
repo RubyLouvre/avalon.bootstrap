@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>list-group</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="dist/bundle.js"></script>
+        <style>
+            ms\:button input{
+                display: none; 
+            }
+            body{
+                padding:2em
+            }
+        </style>
+    </head>
+    <body ms-controller="test">
+        <h3>列表组listgroup</h3>
+        <p>列表组件用于以列表形式呈现复杂的和自定义的内容</p>
+    <ms:listgroup>
+        <li>免费域名注册</li>
+        <li>免费 Window 空间托管</li>
+        <li>图像的数量</li>
+        <li>24*7 支持</li>
+        <li>每年更新成本</li>
+    </ms:listgroup>
+    <p>向列表组添加徽章.我们可以向任意的列表项添加徽章组件，它会自动定位到右边。</p>
+    <ms:listgroup>
+        <li>免费域名注册</li>
+        <li>免费 Window 空间托管</li>
+        <li>图像的数量</li>
+        <li>24*7 支持<ms:label pill='true'>新</ms:label></li>
+    <li>每年更新成本</li>
+    <li>折扣优惠<ms:label pill='true'>新</ms:label></li>
+</ms:listgroup>
+<p>向列表组添加链接, active, disable类名</p>
+<ms:listgroup>
+    <a href="#" class="active">
+        免费域名注册
+    </a>
+    <a href="#" class="disabled">24*7 支持</a>
+    <a href="#">免费 Window 空间托管</a>
+    <a href="#">图像的数量</a>
+    <a href="#">每年更新成本</a>
+</ms:listgroup>
+<p>我们可以向上面已添加链接的列表组添加任意的 HTML 内容。</p>
+<ms:listgroup>
+   <a href="#" class="active">
+      <h4 class="list-group-item-heading">
+         入门网站包
+      </h4>
+   </a>
+   <a href="#">
+      <h4 class="list-group-item-heading">
+         免费域名注册
+      </h4>
+      <p class="list-group-item-text">
+         您将通过网页进行免费域名注册。
+      </p>
+   </a>
+   <a href="#">
+      <h4 class="list-group-item-heading">
+         24*7 支持
+      </h4>
+      <p class="list-group-item-text">
+         我们提供 24*7 支持。
+      </p>
+   </a>
+</ms:listgroup>
+<p>我们可以使用list-group-item-success, list-group-item-info, list-group-item-warning,
+    list-group-item-danger调整每一项的背影</p>
+<ms:listgroup>
+   <a href="#" class="list-group-item-success">
+      <h4 class="list-group-item-heading">
+         商务网站包
+      </h4>
+   </a>
+   <a href="#">
+      <h4 class="list-group-item-heading">
+         免费域名注册
+      </h4>
+      <p class="list-group-item-text">
+         您将通过网页进行免费域名注册。
+      </p>
+   </a>
+   <a href="#">
+      <h4 class="list-group-item-heading">24*7 支持</h4>
+      <p class="list-group-item-text">我们提供 24*7 支持。</p>
+   </a>
+</ms:listgroup>
+
+</body>
+</html>
