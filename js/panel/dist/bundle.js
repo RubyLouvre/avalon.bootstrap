@@ -46,11 +46,12 @@
 
 	__webpack_require__(1)
 	__webpack_require__(2)
+
 	__webpack_require__(4)
 
 	__webpack_require__(5)
+	__webpack_require__(9);
 
-	__webpack_require__(7)
 	avalon.define({
 	    $id: "test"
 	})
@@ -5931,203 +5932,8 @@
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var avalon = __webpack_require__(3)
-
-	avalon.component("ms:button", {
-	    color: "primary", //primary secondary success warning danger link
-	    outline: false,
-	    $slot: "content",
-	    size: "", //lg sm
-	    content: "",
-	    $init: function (vm, element) {
-	        element.setAttribute("ms-class-12", "disabled:disabled")
-	    },
-	    $template: "{{content|html}}",
-	    block: false, //是否占满一行
-	    active: false,
-	    disabled: false,
-	    $dispose: function (vm, element) {
-	        element["ms-button-vm"] = void 0
-	        element.innerHTML = ""
-	    },
-	    $ready: function (vm, element) {
-	        var btn = avalon(element)
-	        element["ms-button-vm"] = vm
-	        btn.attr("role", "button")
-	        btn.addClass("btn")
-	        if (vm.color) {
-	            btn.addClass("btn-" + vm.color + (!!vm.outline ? "-outline" : ""))
-	        }
-	        if (vm.size) {
-	            btn.addClass("btn-" + vm.size)
-	        }
-	        if (vm.block) {
-	            btn.addClass("btn-block")
-	        }
-	        function activate(a, b) {
-	            setTimeout(function () {
-	                btn.toggleClass("active", a)
-	                var input = element.getElementsByTagName("input")[0]
-	                input && (input.checked = a)
-	                element.setAttribute('aria-pressed', a)
-	                if (!b)
-	                    avalon.fireDom(element, "change")
-	            })
-	        }
-
-	        vm.$watch("active", activate)
-	        activate(!!vm.active, true)
-
-	    }
-	})
-
-	function toggleRadios(element, vm, hasActive) {
-	    var parent = element.parentNode
-	    while (parent && parent.nodeType === 1) {
-	        if (parent.getAttribute("data-toggle") === "buttons") {
-	            if (!hasActive)
-	                vm.active = !vm.active
-	            var input = element.getElementsByTagName("input")[0]
-	            if (input) {
-	                if (input.type === 'radio') {
-	                    var all = parent.getElementsByTagName("ms:button")
-	                    for (var i = 0, el; el = all[i++]; ) {
-	                        if (el["ms-button-vm"] && el !== element) {
-	                            el["ms-button-vm"].active = false
-	                        }
-	                    }
-	                }
-	            }
-	        }
-	        parent = parent.parentNode
-	    }
-	}
-	function delegate(event, other) {
-	    var button = event.target
-	    while (button && button.nodeType === 1) {
-	        var vm = button["ms-button-vm"]
-	        if (vm) {
-	            if (other) {
-	                other(button)
-	            } else {
-	                event.preventDefault()
-	                var hasActive = false
-	                if (button.getAttribute("data-toggle") === "button") {
-	                    vm.active = !vm.active
-	                    hasActive = true
-	                }
-	                toggleRadios(button, vm, hasActive)
-	            }
-	            break
-	        }
-	        button = button.parentNode
-	    }
-	}
-	avalon(document).bind("click", delegate)
-
-	avalon(document).bind("focusin", function (event) {
-	    delegate(event, function (button) {
-	        avalon(button).addClass("focus")
-	    })
-	})
-
-	avalon(document).bind("focusout", function (event) {
-	    delegate(event, function (button) {
-	        avalon(button).removeClass("focus")
-	    })
-	})
-
-
-
-	module.exports = avalon
-	// 文档 http://v4-alpha.getbootstrap.com/components/buttons/
-	// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
-
-/***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* 
-	 * 
-	 *检测对focusin/focusout的支持,不支持进行修复
-	 *
-	 *http://www.cnblogs.com/snandy/archive/2011/07/19/2110393.html
-	 */
 	var avalon = __webpack_require__(1)
-	function supportEvent(eventName, element) {
-	    var isSupported;
-	    eventName = 'on' + eventName
-	    isSupported = eventName in element
-
-	    if (!isSupported && element.setAttribute) {
-	        element.setAttribute(eventName, '')
-	        isSupported = typeof element[eventName] === 'function'
-	        if (element[eventName] !== void 0) {
-	            element[eventName] = void 0
-	        }
-	        element.removeAttribute(eventName)
-	    }
-	    return isSupported
-	}
-	var supportFocusin = !!(document.documentElement.uniqueID || window.VBArray || window.opera || window.chrome)
-	if (!supportFocusin) {
-	    var a = document.createElement('a') 
-	    a.href = "#"
-	    supportFocusin = supportEvent("focusin", a)
-	}
-	if (!supportFocusin) {
-	    avalon.log("当前浏览器不支持focusin")
-	    avalon.each({
-	        focusin: "focus",
-	        focusout: "blur"
-	    }, function (origType, fixType) {
-	        avalon.eventHooks[origType] = {
-	            type: fixType,
-	            phase: true
-	        }
-	    })
-	}
-
-	module.exports = avalon
-
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var avalon = __webpack_require__(1)
-
-	avalon.component("ms:label", {
-	    $slot: "content",
-	    content: "",
-	    color: "default", //primary success info warning danger
-	    $template: "<span>{{content|html}}</span>",
-	    $replace: true,
-	    pill: false,
-	    $dispose: function (vm, element) {
-	        element.innerHTML = ""
-	    },
-	    $ready: function (vm, element) {
-	        var root = avalon(element)
-	        root.addClass("label")
-	        root.addClass("label-"+vm.color)
-	        if(vm.pill){
-	            root.addClass("label-pill")
-	        }
-	    }
-	})
-
-
-	module.exports = avalon
-	// 文档 http://v4-alpha.getbootstrap.com/components/buttons/
-	// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var avalon = __webpack_require__(1)
-	var $ = __webpack_require__(6)
+	var $ = __webpack_require__(3)
 	avalon.component("ms:listgroup", {
 	    $slot: "content",
 	    content: "",
@@ -6162,7 +5968,7 @@
 	// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
 
 /***/ },
-/* 6 */
+/* 3 */
 /***/ function(module, exports) {
 
 	
@@ -6377,16 +6183,72 @@
 	 */
 
 /***/ },
-/* 7 */
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var avalon = __webpack_require__(1)
+	var $ = __webpack_require__(3)
+	avalon.component("ms:panel", {
+	    $slot: "content",
+	    content: "",
+	    $template: "<div>{{content|html}}</div>",
+	    color: "default", //lg sm xs
+	    $replace: true,
+
+	    $ready: function (vm, element) {
+	        var root = avalon(element)
+
+	        root.addClass("panel")
+	        root.addClass("panel-" + vm.color)
+	        normailize(element.childNodes)
+	        $(".panel-heading > h1, .panel-heading > h2,.panel-heading > h3," +
+	                ".panel-heading > h4,.panel-heading > h5,.panel-heading > h6",
+	                element).forEach(function (el) {
+	            avalon(el).addClass("panel-title")
+	        })
+
+	    }
+	})
+	function normailize(elems) {
+	    var divs = []
+	    for (var i = 0, el; el = elems[i++]; ) {
+	        if (el.nodeType === 1 && el.tagName === "DIV") {
+	            divs.push(el)
+	        }
+	    }
+	    switch (divs.length) {
+	        case 1:
+	            avalon(divs[0]).addClass("panel-body")
+	            break
+	        case 2:
+	            avalon(divs[0]).addClass("panel-heading")
+	            avalon(divs[1]).addClass("panel-body")
+	            break
+	        case 3:
+	            avalon(divs[0]).addClass("panel-heading")
+	            avalon(divs[1]).addClass("panel-body")
+	            avalon(divs[2]).addClass("panel-footer")
+	            break
+	     //   default:
+	          //  throw "ms:panel标签最多只允许存在三个元素节点"
+	    }
+	}
+
+	module.exports = avalon
+	// 文档 http://v4-alpha.getbootstrap.com/components/buttons/
+	// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
+
+/***/ },
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(8);
+	var content = __webpack_require__(6);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(10)(content, {});
+	var update = __webpack_require__(8)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6403,10 +6265,10 @@
 	}
 
 /***/ },
-/* 8 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(9)();
+	exports = module.exports = __webpack_require__(7)();
 	// imports
 
 
@@ -6417,7 +6279,7 @@
 
 
 /***/ },
-/* 9 */
+/* 7 */
 /***/ function(module, exports) {
 
 	/*
@@ -6473,7 +6335,7 @@
 
 
 /***/ },
-/* 10 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -6724,6 +6586,46 @@
 		if(oldSrc)
 			URL.revokeObjectURL(oldSrc);
 	}
+
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(10);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(8)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../../../usr/local/lib/node_modules/css-loader/index.js!./../../../../../usr/local/lib/node_modules/sass-loader/index.js!./panel.scss", function() {
+				var newContent = require("!!./../../../../../usr/local/lib/node_modules/css-loader/index.js!./../../../../../usr/local/lib/node_modules/sass-loader/index.js!./panel.scss");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(7)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".panel {\n  margin-bottom: 1rem;\n  background-color: #fff;\n  border: 1px solid transparent;\n  border-radius: 0.25rem; }\n\n.panel-body {\n  padding: 15px; }\n  .panel-body:before, .panel-body:after {\n    content: \" \";\n    display: table; }\n  .panel-body:after {\n    clear: both; }\n\n.panel-heading {\n  padding: 10px 15px;\n  border-bottom: 1px solid transparent;\n  border-top-right-radius: -0.75rem;\n  border-top-left-radius: -0.75rem; }\n  .panel-heading > .dropdown .dropdown-toggle {\n    color: inherit; }\n\n.panel-title {\n  margin-top: 0;\n  margin-bottom: 0;\n  font-size: 2rem;\n  color: inherit; }\n  .panel-title > a,\n  .panel-title > small,\n  .panel-title > .small,\n  .panel-title > small > a,\n  .panel-title > .small > a {\n    color: inherit; }\n\n.panel-footer {\n  padding: 10px 15px;\n  background-color: #f5f5f5;\n  border-top: 1px solid #ddd;\n  border-bottom-right-radius: -0.75rem;\n  border-bottom-left-radius: -0.75rem; }\n\n.panel > .list-group,\n.panel > .panel-collapse > .list-group {\n  margin-bottom: 0; }\n  .panel > .list-group .list-group-item,\n  .panel > .panel-collapse > .list-group .list-group-item {\n    border-width: 1px 0;\n    border-radius: 0; }\n  .panel > .list-group:first-child .list-group-item:first-child,\n  .panel > .panel-collapse > .list-group:first-child .list-group-item:first-child {\n    border-top: 0;\n    border-top-right-radius: -0.75rem;\n    border-top-left-radius: -0.75rem; }\n  .panel > .list-group:last-child .list-group-item:last-child,\n  .panel > .panel-collapse > .list-group:last-child .list-group-item:last-child {\n    border-bottom: 0;\n    border-bottom-right-radius: -0.75rem;\n    border-bottom-left-radius: -0.75rem; }\n\n.panel > .panel-heading + .panel-collapse > .list-group .list-group-item:first-child {\n  border-top-right-radius: 0;\n  border-top-left-radius: 0; }\n\n.panel-heading + .list-group .list-group-item:first-child {\n  border-top-width: 0; }\n\n.list-group + .panel-footer {\n  border-top-width: 0; }\n\n.panel > .table,\n.panel > .table-responsive > .table,\n.panel > .panel-collapse > .table {\n  margin-bottom: 0; }\n  .panel > .table caption,\n  .panel > .table-responsive > .table caption,\n  .panel > .panel-collapse > .table caption {\n    padding-left: 15px;\n    padding-right: 15px; }\n\n.panel > .table:first-child,\n.panel > .table-responsive:first-child > .table:first-child {\n  border-top-right-radius: -0.75rem;\n  border-top-left-radius: -0.75rem; }\n  .panel > .table:first-child > thead:first-child > tr:first-child,\n  .panel > .table:first-child > tbody:first-child > tr:first-child,\n  .panel > .table-responsive:first-child > .table:first-child > thead:first-child > tr:first-child,\n  .panel > .table-responsive:first-child > .table:first-child > tbody:first-child > tr:first-child {\n    border-top-left-radius: -0.75rem;\n    border-top-right-radius: -0.75rem; }\n    .panel > .table:first-child > thead:first-child > tr:first-child td:first-child,\n    .panel > .table:first-child > thead:first-child > tr:first-child th:first-child,\n    .panel > .table:first-child > tbody:first-child > tr:first-child td:first-child,\n    .panel > .table:first-child > tbody:first-child > tr:first-child th:first-child,\n    .panel > .table-responsive:first-child > .table:first-child > thead:first-child > tr:first-child td:first-child,\n    .panel > .table-responsive:first-child > .table:first-child > thead:first-child > tr:first-child th:first-child,\n    .panel > .table-responsive:first-child > .table:first-child > tbody:first-child > tr:first-child td:first-child,\n    .panel > .table-responsive:first-child > .table:first-child > tbody:first-child > tr:first-child th:first-child {\n      border-top-left-radius: -0.75rem; }\n    .panel > .table:first-child > thead:first-child > tr:first-child td:last-child,\n    .panel > .table:first-child > thead:first-child > tr:first-child th:last-child,\n    .panel > .table:first-child > tbody:first-child > tr:first-child td:last-child,\n    .panel > .table:first-child > tbody:first-child > tr:first-child th:last-child,\n    .panel > .table-responsive:first-child > .table:first-child > thead:first-child > tr:first-child td:last-child,\n    .panel > .table-responsive:first-child > .table:first-child > thead:first-child > tr:first-child th:last-child,\n    .panel > .table-responsive:first-child > .table:first-child > tbody:first-child > tr:first-child td:last-child,\n    .panel > .table-responsive:first-child > .table:first-child > tbody:first-child > tr:first-child th:last-child {\n      border-top-right-radius: -0.75rem; }\n\n.panel > .table:last-child,\n.panel > .table-responsive:last-child > .table:last-child {\n  border-bottom-right-radius: -0.75rem;\n  border-bottom-left-radius: -0.75rem; }\n  .panel > .table:last-child > tbody:last-child > tr:last-child,\n  .panel > .table:last-child > tfoot:last-child > tr:last-child,\n  .panel > .table-responsive:last-child > .table:last-child > tbody:last-child > tr:last-child,\n  .panel > .table-responsive:last-child > .table:last-child > tfoot:last-child > tr:last-child {\n    border-bottom-left-radius: -0.75rem;\n    border-bottom-right-radius: -0.75rem; }\n    .panel > .table:last-child > tbody:last-child > tr:last-child td:first-child,\n    .panel > .table:last-child > tbody:last-child > tr:last-child th:first-child,\n    .panel > .table:last-child > tfoot:last-child > tr:last-child td:first-child,\n    .panel > .table:last-child > tfoot:last-child > tr:last-child th:first-child,\n    .panel > .table-responsive:last-child > .table:last-child > tbody:last-child > tr:last-child td:first-child,\n    .panel > .table-responsive:last-child > .table:last-child > tbody:last-child > tr:last-child th:first-child,\n    .panel > .table-responsive:last-child > .table:last-child > tfoot:last-child > tr:last-child td:first-child,\n    .panel > .table-responsive:last-child > .table:last-child > tfoot:last-child > tr:last-child th:first-child {\n      border-bottom-left-radius: -0.75rem; }\n    .panel > .table:last-child > tbody:last-child > tr:last-child td:last-child,\n    .panel > .table:last-child > tbody:last-child > tr:last-child th:last-child,\n    .panel > .table:last-child > tfoot:last-child > tr:last-child td:last-child,\n    .panel > .table:last-child > tfoot:last-child > tr:last-child th:last-child,\n    .panel > .table-responsive:last-child > .table:last-child > tbody:last-child > tr:last-child td:last-child,\n    .panel > .table-responsive:last-child > .table:last-child > tbody:last-child > tr:last-child th:last-child,\n    .panel > .table-responsive:last-child > .table:last-child > tfoot:last-child > tr:last-child td:last-child,\n    .panel > .table-responsive:last-child > .table:last-child > tfoot:last-child > tr:last-child th:last-child {\n      border-bottom-right-radius: -0.75rem; }\n\n.panel > .panel-body + .table,\n.panel > .panel-body + .table-responsive,\n.panel > .table + .panel-body,\n.panel > .table-responsive + .panel-body {\n  border-top: 1px solid #eceeef; }\n\n.panel > .table > tbody:first-child > tr:first-child th,\n.panel > .table > tbody:first-child > tr:first-child td {\n  border-top: 0; }\n\n.panel > .table-bordered,\n.panel > .table-responsive > .table-bordered {\n  border: 0; }\n  .panel > .table-bordered > thead > tr > th:first-child,\n  .panel > .table-bordered > thead > tr > td:first-child,\n  .panel > .table-bordered > tbody > tr > th:first-child,\n  .panel > .table-bordered > tbody > tr > td:first-child,\n  .panel > .table-bordered > tfoot > tr > th:first-child,\n  .panel > .table-bordered > tfoot > tr > td:first-child,\n  .panel > .table-responsive > .table-bordered > thead > tr > th:first-child,\n  .panel > .table-responsive > .table-bordered > thead > tr > td:first-child,\n  .panel > .table-responsive > .table-bordered > tbody > tr > th:first-child,\n  .panel > .table-responsive > .table-bordered > tbody > tr > td:first-child,\n  .panel > .table-responsive > .table-bordered > tfoot > tr > th:first-child,\n  .panel > .table-responsive > .table-bordered > tfoot > tr > td:first-child {\n    border-left: 0; }\n  .panel > .table-bordered > thead > tr > th:last-child,\n  .panel > .table-bordered > thead > tr > td:last-child,\n  .panel > .table-bordered > tbody > tr > th:last-child,\n  .panel > .table-bordered > tbody > tr > td:last-child,\n  .panel > .table-bordered > tfoot > tr > th:last-child,\n  .panel > .table-bordered > tfoot > tr > td:last-child,\n  .panel > .table-responsive > .table-bordered > thead > tr > th:last-child,\n  .panel > .table-responsive > .table-bordered > thead > tr > td:last-child,\n  .panel > .table-responsive > .table-bordered > tbody > tr > th:last-child,\n  .panel > .table-responsive > .table-bordered > tbody > tr > td:last-child,\n  .panel > .table-responsive > .table-bordered > tfoot > tr > th:last-child,\n  .panel > .table-responsive > .table-bordered > tfoot > tr > td:last-child {\n    border-right: 0; }\n  .panel > .table-bordered > thead > tr:first-child > td,\n  .panel > .table-bordered > thead > tr:first-child > th,\n  .panel > .table-bordered > tbody > tr:first-child > td,\n  .panel > .table-bordered > tbody > tr:first-child > th,\n  .panel > .table-responsive > .table-bordered > thead > tr:first-child > td,\n  .panel > .table-responsive > .table-bordered > thead > tr:first-child > th,\n  .panel > .table-responsive > .table-bordered > tbody > tr:first-child > td,\n  .panel > .table-responsive > .table-bordered > tbody > tr:first-child > th {\n    border-bottom: 0; }\n  .panel > .table-bordered > tbody > tr:last-child > td,\n  .panel > .table-bordered > tbody > tr:last-child > th,\n  .panel > .table-bordered > tfoot > tr:last-child > td,\n  .panel > .table-bordered > tfoot > tr:last-child > th,\n  .panel > .table-responsive > .table-bordered > tbody > tr:last-child > td,\n  .panel > .table-responsive > .table-bordered > tbody > tr:last-child > th,\n  .panel > .table-responsive > .table-bordered > tfoot > tr:last-child > td,\n  .panel > .table-responsive > .table-bordered > tfoot > tr:last-child > th {\n    border-bottom: 0; }\n\n.panel > .table-responsive {\n  border: 0;\n  margin-bottom: 0; }\n\n.panel-group {\n  margin-bottom: 1rem; }\n  .panel-group .panel {\n    margin-bottom: 0;\n    border-radius: 0.25rem; }\n    .panel-group .panel + .panel {\n      margin-top: 5px; }\n  .panel-group .panel-heading {\n    border-bottom: 0; }\n    .panel-group .panel-heading + .panel-collapse > .panel-body,\n    .panel-group .panel-heading + .panel-collapse > .list-group {\n      border-top: 1px solid #ddd; }\n  .panel-group .panel-footer {\n    border-top: 0; }\n    .panel-group .panel-footer + .panel-collapse .panel-body {\n      border-bottom: 1px solid #ddd; }\n\n.panel-default {\n  border-color: #ddd; }\n  .panel-default > .panel-heading {\n    color: #373a3c;\n    background-color: #f5f5f5;\n    border-color: #ddd; }\n    .panel-default > .panel-heading + .panel-collapse > .panel-body {\n      border-top-color: #ddd; }\n    .panel-default > .panel-heading .badge {\n      color: #f5f5f5;\n      background-color: #373a3c; }\n  .panel-default > .panel-footer + .panel-collapse > .panel-body {\n    border-bottom-color: #ddd; }\n\n.panel-primary {\n  border-color: #0275d8; }\n  .panel-primary > .panel-heading {\n    color: #fff;\n    background-color: #0275d8;\n    border-color: #0275d8; }\n    .panel-primary > .panel-heading + .panel-collapse > .panel-body {\n      border-top-color: #0275d8; }\n    .panel-primary > .panel-heading .badge {\n      color: #0275d8;\n      background-color: #fff; }\n  .panel-primary > .panel-footer + .panel-collapse > .panel-body {\n    border-bottom-color: #0275d8; }\n\n.panel-success {\n  border-color: #d0e9c6; }\n  .panel-success > .panel-heading {\n    color: #3c763d;\n    background-color: #dff0d8;\n    border-color: #d0e9c6; }\n    .panel-success > .panel-heading + .panel-collapse > .panel-body {\n      border-top-color: #d0e9c6; }\n    .panel-success > .panel-heading .badge {\n      color: #dff0d8;\n      background-color: #3c763d; }\n  .panel-success > .panel-footer + .panel-collapse > .panel-body {\n    border-bottom-color: #d0e9c6; }\n\n.panel-info {\n  border-color: #bcdff1; }\n  .panel-info > .panel-heading {\n    color: #31708f;\n    background-color: #d9edf7;\n    border-color: #bcdff1; }\n    .panel-info > .panel-heading + .panel-collapse > .panel-body {\n      border-top-color: #bcdff1; }\n    .panel-info > .panel-heading .badge {\n      color: #d9edf7;\n      background-color: #31708f; }\n  .panel-info > .panel-footer + .panel-collapse > .panel-body {\n    border-bottom-color: #bcdff1; }\n\n.panel-warning {\n  border-color: #faf2cc; }\n  .panel-warning > .panel-heading {\n    color: #8a6d3b;\n    background-color: #fcf8e3;\n    border-color: #faf2cc; }\n    .panel-warning > .panel-heading + .panel-collapse > .panel-body {\n      border-top-color: #faf2cc; }\n    .panel-warning > .panel-heading .badge {\n      color: #fcf8e3;\n      background-color: #8a6d3b; }\n  .panel-warning > .panel-footer + .panel-collapse > .panel-body {\n    border-bottom-color: #faf2cc; }\n\n.panel-danger {\n  border-color: #ebcccc; }\n  .panel-danger > .panel-heading {\n    color: #a94442;\n    background-color: #f2dede;\n    border-color: #ebcccc; }\n    .panel-danger > .panel-heading + .panel-collapse > .panel-body {\n      border-top-color: #ebcccc; }\n    .panel-danger > .panel-heading .badge {\n      color: #f2dede;\n      background-color: #a94442; }\n  .panel-danger > .panel-footer + .panel-collapse > .panel-body {\n    border-bottom-color: #ebcccc; }\n", ""]);
+
+	// exports
 
 
 /***/ }

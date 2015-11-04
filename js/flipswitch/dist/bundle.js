@@ -46,11 +46,9 @@
 
 	__webpack_require__(1)
 	__webpack_require__(2)
-	__webpack_require__(4)
+	__webpack_require__(6)
+	__webpack_require__(10);
 
-	__webpack_require__(5)
-
-	__webpack_require__(7)
 	avalon.define({
 	    $id: "test"
 	})
@@ -5933,75 +5931,201 @@
 
 	var avalon = __webpack_require__(3)
 
-	avalon.component("ms:button", {
-	    color: "primary", //primary secondary success warning danger link
-	    outline: false,
-	    $slot: "content",
-	    size: "", //lg sm
-	    content: "",
-	    $init: function (vm, element) {
-	        element.setAttribute("ms-class-12", "disabled:disabled")
-	    },
-	    $template: "{{content|html}}",
-	    block: false, //是否占满一行
-	    active: false,
+	var $ = __webpack_require__(4)
+
+	//http://www.bootstrap-switch.org/
+	avalon.component("ms:flipswitch", {
+	    $template: __webpack_require__(5),
+	    $replace: true,
+	    onColor: "primary",
+	    offColor: "default",
+	    onText: "ON",
+	    offText: "OFF",
+	    labelText: "",
+	    size: "",
+	    duplex: "",
+	    name: "",
+	    btnWidth: "auto", //如果处理里on, off, label按钮的长度
 	    disabled: false,
-	    $dispose: function (vm, element) {
-	        element["ms-button-vm"] = void 0
-	        element.innerHTML = ""
-	    },
-	    $ready: function (vm, element) {
-	        var btn = avalon(element)
-	        element["ms-button-vm"] = vm
-	        btn.attr("role", "button")
-	        btn.addClass("btn")
-	        if (vm.color) {
-	            btn.addClass("btn-" + vm.color + (!!vm.outline ? "-outline" : ""))
-	        }
+	    readonly: false,
+	    checked: false,
+	    onChange: avalon.noop,
+	    onInit: avalon.noop,
+	    $animateDistance: 0,
+	    $dragDistance: 0,
+	    $marginLeft: 0,
+	    $btnWidth : 0,
+	    $pageX: 0,
+	    $dragStart: 0,
+	    $skipArray: ["$on", "$off", "$label", "_element", "$container", "btnWidth"],
+	    $ready: function (vm, element, vms) {
+	        var root = avalon(element)
+	        this._element = element
+	        element["ms-flipswitch-vm"] = vm
+	        this.$container = $(".flipswitch-container", element)[0]
+	        this.$on = $(".flipswitch-handle-on", element)[0]
+	        this.$off = $(".flipswitch-handle-off", element)[0]
+
+	        this.$label = $(".flipswitch-label", element)[0]
+	        var input = element.getElementsByTagName("input")[0]
+	        input.name = vm.name
+
 	        if (vm.size) {
-	            btn.addClass("btn-" + vm.size)
+	            root.addClass("flipswitch-" + vm.size)
 	        }
-	        if (vm.block) {
-	            btn.addClass("btn-block")
+	        function switchDisabled(a) {
+	            root.toggleClass("flipswitch-disabled", a)
+	            input.disabled = a
 	        }
-	        function activate(a, b) {
-	            setTimeout(function () {
-	                btn.toggleClass("active", a)
-	                var input = element.getElementsByTagName("input")[0]
-	                input && (input.checked = a)
-	                element.setAttribute('aria-pressed', a)
-	                if (!b)
-	                    avalon.fireDom(element, "change")
-	            })
+	        function switchReadOnly(a) {
+	            root.toggleClass("flipswitch-readonly", a)
+	            input.readonly = a
 	        }
 
-	        vm.$watch("active", activate)
-	        activate(!!vm.active, true)
-
-	    }
-	})
-
-	function toggleRadios(element, vm, hasActive) {
-	    var parent = element.parentNode
-	    while (parent && parent.nodeType === 1) {
-	        if (parent.getAttribute("data-toggle") === "buttons") {
-	            if (!hasActive)
-	                vm.active = !vm.active
-	            var input = element.getElementsByTagName("input")[0]
-	            if (input) {
-	                if (input.type === 'radio') {
-	                    var all = parent.getElementsByTagName("ms:button")
-	                    for (var i = 0, el; el = all[i++]; ) {
-	                        if (el["ms-button-vm"] && el !== element) {
-	                            el["ms-button-vm"].active = false
-	                        }
+	        function switchChecked(a) {
+	            input.checked = a
+	            root.toggleClass("flipswitch-on", a)
+	            root.toggleClass("flipswitch-off", !a)
+	            if (a) {
+	                vm.$container.style.marginLeft = "0px"
+	                avalon.log("ON", a)
+	            } else {
+	                vm.$container.style.marginLeft = (-1 * vm.$animateDistance) + "px"
+	                avalon.log("OFF", a)
+	            }
+	            if (vm.duplex) {
+	                for (var i = 0, el; el = vms[i++]; ) {
+	                    if (vm.hasOwnProperty(vm.duplex)) {
+	                        el[vm.duplex] = a;
+	                        break
 	                    }
 	                }
 	            }
+	            avalon.fireDom(input, "change")
+	            vm.onChange.call(element, vm)
 	        }
-	        parent = parent.parentNode
+	        vm.$watch("disabled", switchDisabled)
+	        vm.$watch("readonly", switchReadOnly)
+	        vm.$watch("checked", switchChecked)
+
+	        switchDisabled(vm.disabled)
+	        switchReadOnly(vm.readonly)
+
+	        setTimeout(function () {
+	            vm._width()
+	            switchChecked(vm.checked)
+	            vm.onInit(vm)
+	        })
+	        function dragstart(e) {
+	            if (vm.$dragStart || vm.disabled || vm.readonly) {
+	                return;
+	            }
+	            e.preventDefault();
+	            e.stopPropagation();
+	            vm.$dragStart = true
+	            vm.$pageX = e.pageX || e.touches[0].pageX
+	            vm.$marginLeft = avalon(vm.$container).css("marginLeft")
+	            root.removeClass("flipswitch-animate")
+	        }
+	        avalon.bind(this.$label, "mousedown", dragstart)
+	        avalon.bind(this.$label, "touchstart", dragstart)
+	        avalon.bind(this.$label, "mouseleave", function (e) {
+	            vm._dragend(e)
+	        })
+
+	    },
+	    toggleState: function () {
+	        if (this.disabled || this.readonly) {
+	            return
+	        }
+	        this.checked = !this.checked
+	    },
+	    state: function (checked) {
+	        if (this.disabled || this.readonly) {
+	            return
+	        }
+	        this.checked = checked
+	    },
+	    _drag: function (e) {
+
+	        if (this.$dragStart) {//确保$dragStart为数字
+	            e.preventDefault()
+	            //水平移动距离 ,正数向右移动(开), 负数向左移动(关)
+	            var difference = this.$dragDistance = (e.pageX || e.touches[0].pageX) - this.$pageX
+	            if (difference < -this.$btnWidth || difference > 0) {
+	                return
+	            }
+	            avalon(this.$container).css("margin-left", difference)
+	        }
+
+
+	    },
+	    _dragend: function (e) {
+	        var distance = Math.abs(this.$dragDistance)
+	        console.log(distance)
+	        if (!this.$dragStart || distance < 10) {
+	            //如果没有移动，或移动距离太少，还原现场
+	            console.log("11111111")
+	            //  avalon(this.$container).css("margin-left", this.$marginLeft)
+	            avalon(this._element).addClass("flipswitch-animate")
+	            this.$dragStart = 0
+	        } else {
+	            e.preventDefault()
+	            avalon(this._element).addClass("flipswitch-animate")
+	            if (!this.checked) {//如果是OFF
+	                if (distance < this.$animateDistance / 2) {
+	                    this.checked = true
+	                } else {
+	                    this.$container.style.marginLeft = (-1 * this.$animateDistance) + "px"
+	                }
+	            } else {//如果原来是ON
+	                // 如果拖动不正确,则不触发点击事件,也不改变状态,还原之前移动的距离
+	                if (distance > this.$animateDistance / 2) {
+	                    this.checked = false
+	                } else {
+	                    this.$container.style.marginLeft = "0px"
+	                }
+	            }
+	            this.$dragDistance = 0
+	            this.$pageX = 0
+	            this.$marginLeft = 0
+	            var _this = this
+	            setTimeout(function () {
+	                _this.$dragStart = 0
+	            }, 300)
+	        }
+	    },
+	    _width: function () {
+	        var btns = [this.$on, this.$off, this.$label]
+	        btns.forEach(function (el) {
+	            el.style.width = ""
+	        })
+
+	        var btnWidth = this.btnWidth === "auto" ?
+	                Math.max(this.$on.offsetWidth, this.$off.offsetWidth) :
+	                this.btnWidth
+	        
+	        var labelWidth = this.$btnWidth = btnWidth
+	        btns.forEach(function (el) {
+	            avalon(el).width(btnWidth)
+	        })
+
+	        if (this.btnWidth === "auto") {
+	            labelWidth = this.$label.offsetWidth
+	            if (labelWidth > btnWidth) {
+	                avalon(this.$label).width(labelWidth)
+	            }
+	        }
+	        var total = labelWidth + btnWidth * 2
+	        var offset = this.$container.offsetWidth
+
+	        avalon(this.$container).width(offset);
+	        var width = btnWidth + labelWidth
+	        this.$animateDistance = btnWidth - (total - offset)
+	        avalon(this._element).width(width)
+	        return width
 	    }
-	}
+	})
 	function delegate(event, other) {
 	    var button = event.target
 	    while (button && button.nodeType === 1) {
@@ -6023,25 +6147,90 @@
 	        button = button.parentNode
 	    }
 	}
-	avalon(document).bind("click", delegate)
 
-	avalon(document).bind("focusin", function (event) {
-	    delegate(event, function (button) {
-	        avalon(button).addClass("focus")
+	avalon.bind(document, "focusout", function (e) {
+	    var el = e.target
+	    while (el && el.nodeName === 1) {
+	        if (avalon(el).hasClass("flipswitch-focused")) {
+	            avalon(el).removeClass("flipswitch-focused")
+	            avalon.fireDom(el, "blur")
+	            break
+	        }
+	        el = el.parentNode
+	    }
+	})
+	function delegate(e, callback) {
+	    var el = e.target || e.touches[0], vm
+	    while (el && el.nodeType === 1) {
+	        if (el.getAttribute("data-toggle")) {
+	            var trigger = el
+	            while (el) {
+	                vm = el["ms-flipswitch-vm"]
+	                if (vm) {
+	                    break
+	                }
+	                el = el.parentNode
+	            }
+	            if (!vm)
+	                return
+	            callback(e, trigger, vm)
+	            break
+	        }
+	        el = el.parentNode
+
+	    }
+	}
+	avalon.bind(document, "click", function (e) {
+	    delegate(e, function (event, el, vm) {
+	        var match = el.className.match(/flipswitch\-(handle\-on|handle\-off|label)/) || []
+	        switch (match[1]) {
+	            case "handle-on":
+	                event.preventDefault()
+	                event.stopPropagation()
+	                vm.state(false)
+	                break
+	            case "handle-off":
+	                event.preventDefault()
+	                event.stopPropagation()
+	                vm.state(true)
+	                break
+	            case "label":
+	                event.stopPropagation()
+
+	                if (!vm.$dragStart) {
+	                    vm.toggleState()
+	                }
+	                break
+	        }
+	        avalon.fireDom(vm._element, "focus")
+	        avalon(vm._element).addClass("flipswitch-focused")
+
 	    })
 	})
 
-	avalon(document).bind("focusout", function (event) {
-	    delegate(event, function (button) {
-	        avalon(button).removeClass("focus")
+	function labelCallback(e) {
+	    delegate(e, function (event, el, vm) {
+	        if (/flipswitch\-label\b/.test(el.className)) {
+	            switch (e.type) {
+	                case "mousemove":
+	                case "touchmove":
+	                    vm._drag(event)
+	                    break
+	                case "mouseup":
+	                case "touchend":
+	                    vm._dragend(event)
+	                    break
+	            }
+	        }
 	    })
-	})
+	}
 
 
+	avalon.bind(document, "mousemove", labelCallback)
+	avalon.bind(document, "touchmove", labelCallback)
+	avalon.bind(document, "mouseup", labelCallback)
+	avalon.bind(document, "touchend", labelCallback)
 
-	module.exports = avalon
-	// 文档 http://v4-alpha.getbootstrap.com/components/buttons/
-	// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
 
 /***/ },
 /* 3 */
@@ -6093,76 +6282,6 @@
 
 /***/ },
 /* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var avalon = __webpack_require__(1)
-
-	avalon.component("ms:label", {
-	    $slot: "content",
-	    content: "",
-	    color: "default", //primary success info warning danger
-	    $template: "<span>{{content|html}}</span>",
-	    $replace: true,
-	    pill: false,
-	    $dispose: function (vm, element) {
-	        element.innerHTML = ""
-	    },
-	    $ready: function (vm, element) {
-	        var root = avalon(element)
-	        root.addClass("label")
-	        root.addClass("label-"+vm.color)
-	        if(vm.pill){
-	            root.addClass("label-pill")
-	        }
-	    }
-	})
-
-
-	module.exports = avalon
-	// 文档 http://v4-alpha.getbootstrap.com/components/buttons/
-	// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var avalon = __webpack_require__(1)
-	var $ = __webpack_require__(6)
-	avalon.component("ms:listgroup", {
-	    $slot: "content",
-	    content: "",
-	    $template: "<ul>{{content|html}}</ul>",
-	    size: "", //lg sm xs
-	    $replace: true,
-	    $init: function (vm, element) {
-	        if (/^\s*\<a/.test(element.innerHTML)) {
-	            vm.$template = "<div>{{content|html}}</div>"
-	        }
-	    },
-	    $ready: function (vm, element) {
-	        var root = avalon(element)
-	        root.addClass("list-group")
-	        normailizeMenu(element.childNodes)
-	        $(".list-group-item > .label", element).forEach(function(el){
-	           avalon(el).addClass("pull-right")
-	        })
-	    }
-	})
-	function normailizeMenu(elems) {
-	    for (var i = 0, el; el = elems[i++]; ) {
-	        if (el.nodeType === 1) {
-	            avalon(el).addClass("list-group-item")
-	            
-	        }
-	    }
-	}
-
-	module.exports = avalon
-	// 文档 http://v4-alpha.getbootstrap.com/components/buttons/
-	// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
-
-/***/ },
-/* 6 */
 /***/ function(module, exports) {
 
 	
@@ -6377,16 +6496,22 @@
 	 */
 
 /***/ },
-/* 7 */
+/* 5 */
+/***/ function(module, exports) {
+
+	module.exports = "<div class=\"flipswitch flipswitch-animate\" >\n    <div class=\"flipswitch-container\" >\n        <span class=\"flipswitch-handle-on\"  data-toggle=\"flipswitch\" ms-class=\"flipswitch-{{onColor}}\">{{onText}}</span>\n        <span class=\"flipswitch-label\"      data-toggle=\"flipswitch\">{{labelText}}</span>\n        <span class=\"flipswitch-handle-off\" data-toggle=\"flipswitch\" ms-class=\"flipswitch-{{offColor}}\">{{offText}}</span>\n        <input type=\"checkbox\" >\n    </div>\n</div>"
+
+/***/ },
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(8);
+	var content = __webpack_require__(7);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(10)(content, {});
+	var update = __webpack_require__(9)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6403,10 +6528,10 @@
 	}
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(9)();
+	exports = module.exports = __webpack_require__(8)();
 	// imports
 
 
@@ -6417,7 +6542,7 @@
 
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports) {
 
 	/*
@@ -6473,7 +6598,7 @@
 
 
 /***/ },
-/* 10 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -6724,6 +6849,46 @@
 		if(oldSrc)
 			URL.revokeObjectURL(oldSrc);
 	}
+
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(11);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(9)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../../../usr/local/lib/node_modules/css-loader/index.js!./../../../../../usr/local/lib/node_modules/sass-loader/index.js!./flipswitch.scss", function() {
+				var newContent = require("!!./../../../../../usr/local/lib/node_modules/css-loader/index.js!./../../../../../usr/local/lib/node_modules/sass-loader/index.js!./flipswitch.scss");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(8)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".flipswitch {\n  display: inline-block;\n  direction: ltr;\n  cursor: pointer;\n  border-radius: 0.25rem;\n  border: 1px solid;\n  border-color: #0275d8;\n  position: relative;\n  text-align: left;\n  overflow: hidden;\n  line-height: 8px;\n  z-index: 0;\n  box-sizing: border-box;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n  vertical-align: middle;\n  -webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n  -moz-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n  -ms-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n  -o-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n  transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s; }\n  .flipswitch .flipswitch-container {\n    display: inline-block;\n    top: 0;\n    border-radius: 0.25rem;\n    -webkit-transform: translate3d(0, 0, 0);\n    -moz-transform: translate3d(0, 0, 0);\n    -ms-transform: translate3d(0, 0, 0);\n    transform: translate3d(0, 0, 0); }\n  .flipswitch .flipswitch-handle-on,\n  .flipswitch .flipswitch-handle-off,\n  .flipswitch .flipswitch-label {\n    box-sizing: border-box;\n    -webkit-box-sizing: border-box;\n    -moz-box-sizing: border-box;\n    cursor: pointer;\n    display: inline-block !important;\n    height: 100%;\n    padding: 6px 12px;\n    font-size: 1rem;\n    line-height: 1rem; }\n  .flipswitch .flipswitch-handle-on,\n  .flipswitch .flipswitch-handle-off {\n    text-align: center;\n    z-index: 1; }\n    .flipswitch .flipswitch-handle-on.flipswitch-primary,\n    .flipswitch .flipswitch-handle-off.flipswitch-primary {\n      color: #fff;\n      background: #0275d8; }\n    .flipswitch .flipswitch-handle-on.flipswitch-info,\n    .flipswitch .flipswitch-handle-off.flipswitch-info {\n      color: #fff;\n      background: #5bc0de; }\n    .flipswitch .flipswitch-handle-on.flipswitch-success,\n    .flipswitch .flipswitch-handle-off.flipswitch-success {\n      color: #fff;\n      background: #5cb85c; }\n    .flipswitch .flipswitch-handle-on.flipswitch-warning,\n    .flipswitch .flipswitch-handle-off.flipswitch-warning {\n      background: #f0ad4e;\n      color: #fff; }\n    .flipswitch .flipswitch-handle-on.flipswitch-danger,\n    .flipswitch .flipswitch-handle-off.flipswitch-danger {\n      color: #fff;\n      background: #d9534f; }\n    .flipswitch .flipswitch-handle-on.flipswitch-default,\n    .flipswitch .flipswitch-handle-off.flipswitch-default {\n      color: #000;\n      background: #eeeeee; }\n  .flipswitch .flipswitch-label {\n    text-align: center;\n    margin-top: -1px;\n    margin-bottom: -1px;\n    z-index: 100;\n    color: #333;\n    background: #fff; }\n  .flipswitch .flipswitch-handle-on {\n    border-bottom-left-radius: -0.75rem;\n    border-top-left-radius: -0.75rem; }\n  .flipswitch .flipswitch-handle-off {\n    border-bottom-right-radius: -0.75rem;\n    border-top-right-radius: -0.75rem; }\n  .flipswitch input[type='radio'],\n  .flipswitch input[type='checkbox'] {\n    position: absolute !important;\n    top: 0;\n    left: 0;\n    margin: 0;\n    z-index: -1;\n    opacity: 0;\n    filter: alpha(opacity=0); }\n  .flipswitch.flipswitch-sm .flipswitch-handle-on,\n  .flipswitch.flipswitch-sm .flipswitch-handle-off,\n  .flipswitch.flipswitch-sm .flipswitch-label {\n    padding: 5px 10px;\n    font-size: 0.85rem;\n    line-height: 1.5; }\n  .flipswitch.flipswitch-lg .flipswitch-handle-on,\n  .flipswitch.flipswitch-lg .flipswitch-handle-off,\n  .flipswitch.flipswitch-lg .flipswitch-label {\n    padding: 6px 16px;\n    font-size: 1.25rem;\n    line-height: 1.33333; }\n  .flipswitch.flipswitch-disabled, .flipswitch.flipswitch-readonly, .flipswitch.flipswitch-indeterminate {\n    cursor: default !important; }\n    .flipswitch.flipswitch-disabled .flipswitch-handle-on,\n    .flipswitch.flipswitch-disabled .flipswitch-handle-off,\n    .flipswitch.flipswitch-disabled .flipswitch-label, .flipswitch.flipswitch-readonly .flipswitch-handle-on,\n    .flipswitch.flipswitch-readonly .flipswitch-handle-off,\n    .flipswitch.flipswitch-readonly .flipswitch-label, .flipswitch.flipswitch-indeterminate .flipswitch-handle-on,\n    .flipswitch.flipswitch-indeterminate .flipswitch-handle-off,\n    .flipswitch.flipswitch-indeterminate .flipswitch-label {\n      opacity: 0.5;\n      filter: alpha(opacity=50);\n      cursor: default !important; }\n  .flipswitch.flipswitch-animate .flipswitch-container {\n    -webkit-transition: margin-left 0.5s;\n    -moz-transition: margin-left 0.5s;\n    -ms-transition: margin-left 0.5s;\n    -o-transition: margin-left 0.5s;\n    transition: margin-left 0.5s; }\n  .flipswitch.flipswitch-focused {\n    border-color: #66afe9;\n    outline: 0;\n    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);\n    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);\n    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6); }\n  .flipswitch.flipswitch-on .flipswitch-label {\n    border-bottom-right-radius: -0.75rem;\n    border-top-right-radius: -0.75rem; }\n  .flipswitch.flipswitch-off .flipswitch-label {\n    border-bottom-left-radius: -0.75rem;\n    border-top-left-radius: -0.75rem; }\n", ""]);
+
+	// exports
 
 
 /***/ }

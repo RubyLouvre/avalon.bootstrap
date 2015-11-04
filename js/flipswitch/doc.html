@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>list-group</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="dist/bundle.js"></script>
+        <!--
+        <link href="../../css/bootstrap.css?1445934977" media="screen" rel="stylesheet" type="text/css" />
+        -->
+        <style>
+
+            body{
+                padding:2em
+            }
+        </style>
+    </head>
+    <body ms-controller="test">
+        <h3>开关flipswitch</h3>
+        <p>一种更友善的适用于移动的表单元素, 必须指定name, duplex属性</p>
+
+    <ms:flipswitch name="aaa" duplex="xxx" >
+
+    </ms:flipswitch>
+    <table class="table table-striped table-bordered table-hover">
+        <thead>
+            <tr><th>名字</th><th>属性</th><th>描述</th><th>值</th><th>默认值</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>name</td><td>String</td><td>生成的隐藏checkbox的name值</td><td>""</td><td>""</td></tr>
+            <tr><td>duplex</td><td>Boolean</td><td>需要关联的某个父VM的属性名,当checkbox发生改变时,修改此VM的该属性</td><td>""</td><td>""</td></tr>
+            <tr><td>size</td><td>String</td><td>大小</td><td>"","lg", "sm"</td><td>""</td></tr>
+            <tr><td>disabled</td><td>Boolean</td><td>为true,容器添加disabled类,并且checkbox添加disabled属性</td><td></td><td>false</td></tr>
+            <tr><td>readonly</td><td>Boolean</td><td>为true,容器添加readonly类,并且checkbox添加radonly属性</td><td></td><td>false</td></tr>
+            <tr><td>onColor</td><td>String</td><td>ok按钮样式</td><td>'primary', 'info', 'success', 
+                    'warning', 'danger', 'default'</td><td>'primary'</td></tr>
+            <tr><td>offColor</td><td>String</td><td>off按钮样式</td><td>'primary', 'info', 'success', 
+                    'warning', 'danger', 'default'</td><td>'default'</td></tr>
+            <tr><td>onText</td><td>String</td><td>ok按钮文本</td><td></td><td>'ON'</td></tr>
+            <tr><td>offText</td><td>String</td><td>off按钮文本</td><td></td><td>'OFF'</td></tr>
+            <tr><td>labelText</td><td>String</td><td>中间按钮文本</td><td></td><td>'OFF'</td></tr>
+            <tr><td>onInit</td><td>Function</td><td>初始化事件</td><td></td><td></td></tr>
+            <tr><td>onChange</td><td>Function</td><td>切换事件</td><td></td><td></td></tr>
+        </tbody>
+    </table>
+</body>
+</html>

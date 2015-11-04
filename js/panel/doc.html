@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>list-group</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="dist/bundle.js"></script>
+        <style>
+            ms\:button input{
+                display: none; 
+            }
+            body{
+                padding:2em
+            }
+        </style>
+    </head>
+    <body ms-controller="test">
+        <h3>面板panel</h3>
+        <p>面板组件用于把 DOM 组件插入到一个盒子中。它最多只能存在三个DIV, 根据数量框架会自动添加panel-heading, 
+            panel-body, panel-footer类名,如果.panel-heading中存在h1-h6,那么框架为美观还会自动添加panel-title类名</p>
+    <ms:panel>
+        <div>
+            不带 title 的面板标题
+        </div>
+        <div>
+            面板内容
+        </div>
+    </ms:panel>
+
+    <ms:panel>
+        <div>
+            <h3>带有 title 的面板标题</h3>
+        </div>
+        <div>
+            面板内容
+        </div>
+    </ms:panel>
+    <p>拥有三个子元素的面板</p>
+    <ms:panel>
+        <div>
+            <h3>带有 title 的面板标题</h3>
+        </div>
+        <div>
+            面板内容
+        </div>
+        <div>
+            footer
+        </div>
+    </ms:panel>
+    <p>我们通过color属性设置样式</p>
+    <ms:panel color="primary">
+        <div>
+            <h3>面板标题</h3>
+        </div>
+        <div>
+            这是一个基本的面板
+        </div>
+    </ms:panel>
+    <ms:panel color="success">
+        <div>
+            <h3>面板标题</h3>
+        </div>
+        <div>
+            这是一个基本的面板
+        </div>
+    </ms:panel>
+    <ms:panel color="info">
+        <div>
+            <h3>面板标题</h3>
+        </div>
+        <div>
+            这是一个基本的面板
+        </div>
+    </ms:panel>
+    <ms:panel color="warning">
+        <div>
+            <h3>面板标题</h3>
+        </div>
+        <div>
+            这是一个基本的面板
+        </div>
+    </ms:panel>
+    <ms:panel color="danger">
+        <div>
+            <h3>面板标题</h3>
+        </div>
+        <div>
+            这是一个基本的面板
+            
+        </div>
+         <ms:listgroup>
+      <li class="list-group-item">免费域名注册</li>
+      <li class="list-group-item">免费 Window 空间托管</li>
+      <li class="list-group-item">图像的数量</li>
+      <li class="list-group-item">24*7 支持</li>
+      <li class="list-group-item">每年更新成本</li>
+   </ms-listgroup>
+    </ms:panel>
+
+</body>
+</html>
