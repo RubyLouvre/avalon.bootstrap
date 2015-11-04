@@ -1,0 +1,12 @@
+# 文件夹
+node_modules
+
+# 后缀名
+*.zip
+*.log
+
+# 系统文件
+._*
+.cache
+.DS_Store
+Thumbs.db
