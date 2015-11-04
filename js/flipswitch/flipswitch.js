@@ -14,7 +14,7 @@ avalon.component("ms:flipswitch", {
     size: "",
     duplex: "",
     name: "",
-    btnWidth: "auto", //如果处理里on, off, label按钮的长度
+    btnWidth: "auto", //如果处理里label按钮的长度
     disabled: false,
     readonly: false,
     checked: false,
@@ -27,6 +27,10 @@ avalon.component("ms:flipswitch", {
     $pageX: 0,
     $dragStart: 0,
     $skipArray: ["$on", "$off", "$label", "_element", "$container", "btnWidth"],
+    $dispose: function(vm, element){
+        vm.$on = vm.$off = vm.$label = vm._element = null
+        element["ms-flipswitch-vm"] = void 0
+    },
     $ready: function (vm, element, vms) {
         var root = avalon(element)
         this._element = element
@@ -34,7 +38,6 @@ avalon.component("ms:flipswitch", {
         this.$container = $(".flipswitch-container", element)[0]
         this.$on = $(".flipswitch-handle-on", element)[0]
         this.$off = $(".flipswitch-handle-off", element)[0]
-
         this.$label = $(".flipswitch-label", element)[0]
         var input = element.getElementsByTagName("input")[0]
         input.name = vm.name
@@ -87,7 +90,7 @@ avalon.component("ms:flipswitch", {
         })
         function dragstart(e) {
             if (vm.$dragStart || vm.disabled || vm.readonly) {
-                return;
+                return
             }
             e.preventDefault();
             e.stopPropagation();
@@ -131,11 +134,8 @@ avalon.component("ms:flipswitch", {
     },
     _dragend: function (e) {
         var distance = Math.abs(this.$dragDistance)
-        console.log(distance)
         if (!this.$dragStart || distance < 10) {
             //如果没有移动，或移动距离太少，还原现场
-            console.log("11111111")
-            //  avalon(this.$container).css("margin-left", this.$marginLeft)
             avalon(this._element).addClass("flipswitch-animate")
             this.$dragStart = 0
         } else {
