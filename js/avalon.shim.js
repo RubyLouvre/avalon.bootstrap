@@ -5,7 +5,7 @@
  http://weibo.com/jslouvre/
  
  Released under the MIT license
- avalon.shim.js 1.5.5 built in 2015.10.31
+ avalon.shim.js 1.5.5 built in 2015.11.4
  support IE6+ and other browsers
  ==================================================*/
 (function(global, factory) {
@@ -3195,13 +3195,17 @@ function scanNodeArray(nodes, vmodels) {
                             name: "widget"
                         })
                         if (avalon.components[fullName]) {
-                            avalon.component(fullName)
+                            (function (name) {//确保所有ms-attr-name扫描完再处理
+                                setTimeout(function () {
+                                    avalon.component(name)
+                                })
+                            })(fullName)
                         }
                     }
                 }
-               
+
                 scanTag(node, vmodels) //扫描元素节点
-                
+
                 if (node.msHasEvent) {
                     avalon.fireDom(node, "datasetchanged", {
                         bubble: node.msHasEvent
@@ -3474,13 +3478,12 @@ avalon.component = function (name, opts) {
                     elem.parentNode.replaceChild(child, elem)
                     child.msResolved = 1
                     var cssText = elem.style.cssText
-
                     var className = elem.className
                     elem = host.element = child
+                    elem.style.cssText = cssText
                     if(className){
                        avalon(elem).addClass(className)
                     }
-                     elem.style.cssText = cssText
                 }
                 if (keepContainer) {
                     keepContainer.appendChild(elem)
@@ -3879,7 +3882,7 @@ var duplexBinding = avalon.directive("duplex", {
         function compositionEnd() {
             composing = false
         }
-        var updateVModel = function () {
+        var updateVModel = function (e) {
             var val = elem.value //防止递归调用形成死循环
             if (composing || val === binding.oldValue || binding.pipe === null) //处理中文输入法在minlengh下引发的BUG
                 return
@@ -4061,9 +4064,6 @@ var duplexBinding = avalon.directive("duplex", {
                     })
                 }
                 break
-        }
-        if (binding.xtype !== "select") {
-            binding.changed.call(elem, curValue, binding)
         }
     }
 })

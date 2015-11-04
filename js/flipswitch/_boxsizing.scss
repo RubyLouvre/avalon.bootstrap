@@ -1,0 +1,11 @@
+
+
+@mixin box-sizing($type){
+    @if $type == "border-box"{
+        box-sizing: $type;
+        -webkit-box-sizing: $type;
+        -moz-box-sizing: $type;
+    } @else {
+        border-box: content-box;
+    }
+};
