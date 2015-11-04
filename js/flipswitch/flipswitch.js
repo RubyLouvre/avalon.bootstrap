@@ -15,6 +15,7 @@ avalon.component("ms:flipswitch", {
     duplex: "",
     name: "",
     btnWidth: "auto", //如果处理里label按钮的长度
+    labelWidth: "auto",
     disabled: false,
     readonly: false,
     checked: false,
@@ -23,11 +24,11 @@ avalon.component("ms:flipswitch", {
     $animateDistance: 0,
     $dragDistance: 0,
     $marginLeft: 0,
-    $btnWidth : 0,
+    $btnWidth: 0,
     $pageX: 0,
     $dragStart: 0,
-    $skipArray: ["$on", "$off", "$label", "_element", "$container", "btnWidth"],
-    $dispose: function(vm, element){
+    $skipArray: ["$on", "$off", "$label", "_element", "$container", "btnWidth","labelWidth"],
+    $dispose: function (vm, element) {
         vm.$on = vm.$off = vm.$label = vm._element = null
         element["ms-flipswitch-vm"] = void 0
     },
@@ -46,6 +47,7 @@ avalon.component("ms:flipswitch", {
             root.addClass("flipswitch-" + vm.size)
         }
         function switchDisabled(a) {
+            
             root.toggleClass("flipswitch-disabled", a)
             input.disabled = a
         }
@@ -60,10 +62,8 @@ avalon.component("ms:flipswitch", {
             root.toggleClass("flipswitch-off", !a)
             if (a) {
                 vm.$container.style.marginLeft = "0px"
-                avalon.log("ON", a)
             } else {
                 vm.$container.style.marginLeft = (-1 * vm.$animateDistance) + "px"
-                avalon.log("OFF", a)
             }
             if (vm.duplex) {
                 for (var i = 0, el; el = vms[i++]; ) {
@@ -103,6 +103,13 @@ avalon.component("ms:flipswitch", {
         avalon.bind(this.$label, "touchstart", dragstart)
         avalon.bind(this.$label, "mouseleave", function (e) {
             vm._dragend(e)
+        })
+        element.tabIndex = element.tabIndex || -1
+        avalon.bind(element, "focusout", function (e) {
+            if (avalon(element).hasClass("flipswitch-focused")) {
+                avalon(element).removeClass("flipswitch-focused")
+                avalon.fireDom(element, "blur")
+            }
         })
 
     },
@@ -173,18 +180,22 @@ avalon.component("ms:flipswitch", {
         var btnWidth = this.btnWidth === "auto" ?
                 Math.max(this.$on.offsetWidth, this.$off.offsetWidth) :
                 this.btnWidth
-        
+
         var labelWidth = this.$btnWidth = btnWidth
         btns.forEach(function (el) {
             avalon(el).width(btnWidth)
         })
 
-        if (this.btnWidth === "auto") {
+        if (this.labelWidth !== "auto") {
+            avalon(this.$label).width(this.labelWidth)
+            labelWidth = this.$label.offsetWidth
+        } else {
             labelWidth = this.$label.offsetWidth
             if (labelWidth > btnWidth) {
                 avalon(this.$label).width(labelWidth)
             }
         }
+
         var total = labelWidth + btnWidth * 2
         var offset = this.$container.offsetWidth
 
@@ -217,17 +228,7 @@ function delegate(event, other) {
     }
 }
 
-avalon.bind(document, "focusout", function (e) {
-    var el = e.target
-    while (el && el.nodeName === 1) {
-        if (avalon(el).hasClass("flipswitch-focused")) {
-            avalon(el).removeClass("flipswitch-focused")
-            avalon.fireDom(el, "blur")
-            break
-        }
-        el = el.parentNode
-    }
-})
+
 function delegate(e, callback) {
     var el = e.target || e.touches[0], vm
     while (el && el.nodeType === 1) {
@@ -265,14 +266,15 @@ avalon.bind(document, "click", function (e) {
                 break
             case "label":
                 event.stopPropagation()
-
                 if (!vm.$dragStart) {
                     vm.toggleState()
                 }
                 break
         }
-        avalon.fireDom(vm._element, "focus")
-        avalon(vm._element).addClass("flipswitch-focused")
+        if (match[1] ) {
+            avalon.fireDom(vm._element, "focus")
+            avalon(vm._element).addClass("flipswitch-focused")
+        }
 
     })
 })
@@ -299,3 +301,5 @@ avalon.bind(document, "mousemove", labelCallback)
 avalon.bind(document, "touchmove", labelCallback)
 avalon.bind(document, "mouseup", labelCallback)
 avalon.bind(document, "touchend", labelCallback)
+// http://www.bootstrap-switch.org/examples.html
+//移动迷宫 http://pan.baidu.com/s/1hquFE8c
