@@ -165,7 +165,18 @@ $uiname: "flipswitch";
     @include opacity(0);
   }
   
-   &.#{$uiname}-sm {
+  &.#{$uiname}-xs {
+
+    .#{$uiname}-handle-on,
+    .#{$uiname}-handle-off,
+    .#{$uiname}-label {
+      padding: $padding-xs-vertical $padding-xs-horizontal;
+      font-size: $font-size-xs;
+      line-height: $line-height-xs;
+    }
+  }  
+
+  &.#{$uiname}-sm {
 
     .#{$uiname}-handle-on,
     .#{$uiname}-handle-off,
