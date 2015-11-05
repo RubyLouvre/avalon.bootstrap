@@ -10,3 +10,5 @@ node_modules
 .cache
 .DS_Store
 Thumbs.db
+
+/nbproject/private/

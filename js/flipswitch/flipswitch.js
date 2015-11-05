@@ -27,7 +27,7 @@ avalon.component("ms:flipswitch", {
     $btnWidth: 0,
     $pageX: 0,
     $dragStart: 0,
-    $skipArray: ["$on", "$off", "$label", "_element", "$container", "btnWidth","labelWidth"],
+    $skipArray: ["$on", "$off", "$label", "_element", "$container", "btnWidth", "labelWidth"],
     $dispose: function (vm, element) {
         vm.$on = vm.$off = vm.$label = vm._element = null
         element["ms-flipswitch-vm"] = void 0
@@ -43,11 +43,9 @@ avalon.component("ms:flipswitch", {
         var input = element.getElementsByTagName("input")[0]
         input.name = vm.name
 
-        if (vm.size) {
-            root.addClass("flipswitch-" + vm.size)
-        }
+
         function switchDisabled(a) {
-            
+
             root.toggleClass("flipswitch-disabled", a)
             input.disabled = a
         }
@@ -76,15 +74,33 @@ avalon.component("ms:flipswitch", {
             avalon.fireDom(input, "change")
             vm.onChange.call(element, vm)
         }
+        function switchSize(a) {
+            if (!/^(lg|sm|xs)$/.test(a)) {
+                a = ""
+            }
+            root.removeClass("flipswitch-lg flipswitch-sm flipswitch-xs")
+            if (a) {
+                root.addClass("flipswitch-" + a)
+            }
+            vm._width()
+            if (vm.checked) {
+                vm.$container.style.marginLeft = "0px"
+            } else {
+                vm.$container.style.marginLeft = (-1 * vm.$animateDistance) + "px"
+            }
+
+        }
+
         vm.$watch("disabled", switchDisabled)
         vm.$watch("readonly", switchReadOnly)
         vm.$watch("checked", switchChecked)
+        vm.$watch("size", switchSize)
 
         switchDisabled(vm.disabled)
         switchReadOnly(vm.readonly)
 
         setTimeout(function () {
-            vm._width()
+            switchSize(vm.size)
             switchChecked(vm.checked)
             vm.onInit(vm)
         })
@@ -176,6 +192,7 @@ avalon.component("ms:flipswitch", {
         btns.forEach(function (el) {
             el.style.width = ""
         })
+        this._element.style.width = this.$container.style.width = ""
 
         var btnWidth = this.btnWidth === "auto" ?
                 Math.max(this.$on.offsetWidth, this.$off.offsetWidth) :
@@ -196,13 +213,12 @@ avalon.component("ms:flipswitch", {
             }
         }
 
-        var total = labelWidth + btnWidth * 2
-        var offset = this.$container.offsetWidth
-
-        avalon(this.$container).width(offset);
+        var total = labelWidth + btnWidth * 2 + 10
+        var offset = this.$container.offsetWidth 
+        avalon(this.$container).width(total)
         var width = btnWidth + labelWidth
-        this.$animateDistance = btnWidth - (total - offset)
-        avalon(this._element).width(width)
+        this.$animateDistance = btnWidth + Math.min(total - offset,0)
+        avalon(this._element).width(width+4)
         return width
     }
 })
@@ -271,7 +287,7 @@ avalon.bind(document, "click", function (e) {
                 }
                 break
         }
-        if (match[1] ) {
+        if (match[1]) {
             avalon.fireDom(vm._element, "focus")
             avalon(vm._element).addClass("flipswitch-focused")
         }

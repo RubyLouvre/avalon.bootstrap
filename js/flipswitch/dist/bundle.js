@@ -49,10 +49,17 @@
 	__webpack_require__(6)
 	__webpack_require__(10);
 
-	avalon.define({
-	    $id: "test"
+	var vm = avalon.define({
+	    $id: "test",
+	    size: ""
 	})
-
+	vm.$watch("size", function(a){
+	    var flip = avalon.vmodels.size
+	    console.log(a, flip)
+	    if(flip){
+	        flip.size = a
+	    }
+	})
 
 /***/ },
 /* 1 */
@@ -5959,7 +5966,7 @@
 	    $btnWidth: 0,
 	    $pageX: 0,
 	    $dragStart: 0,
-	    $skipArray: ["$on", "$off", "$label", "_element", "$container", "btnWidth","labelWidth"],
+	    $skipArray: ["$on", "$off", "$label", "_element", "$container", "btnWidth", "labelWidth"],
 	    $dispose: function (vm, element) {
 	        vm.$on = vm.$off = vm.$label = vm._element = null
 	        element["ms-flipswitch-vm"] = void 0
@@ -5975,11 +5982,9 @@
 	        var input = element.getElementsByTagName("input")[0]
 	        input.name = vm.name
 
-	        if (vm.size) {
-	            root.addClass("flipswitch-" + vm.size)
-	        }
+
 	        function switchDisabled(a) {
-	            
+
 	            root.toggleClass("flipswitch-disabled", a)
 	            input.disabled = a
 	        }
@@ -6008,15 +6013,33 @@
 	            avalon.fireDom(input, "change")
 	            vm.onChange.call(element, vm)
 	        }
+	        function switchSize(a) {
+	            if (!/^(lg|sm|xs)$/.test(a)) {
+	                a = ""
+	            }
+	            root.removeClass("flipswitch-lg flipswitch-sm flipswitch-xs")
+	            if (a) {
+	                root.addClass("flipswitch-" + a)
+	            }
+	            vm._width()
+	            if (vm.checked) {
+	                vm.$container.style.marginLeft = "0px"
+	            } else {
+	                vm.$container.style.marginLeft = (-1 * vm.$animateDistance) + "px"
+	            }
+
+	        }
+
 	        vm.$watch("disabled", switchDisabled)
 	        vm.$watch("readonly", switchReadOnly)
 	        vm.$watch("checked", switchChecked)
+	        vm.$watch("size", switchSize)
 
 	        switchDisabled(vm.disabled)
 	        switchReadOnly(vm.readonly)
 
 	        setTimeout(function () {
-	            vm._width()
+	            switchSize(vm.size)
 	            switchChecked(vm.checked)
 	            vm.onInit(vm)
 	        })
@@ -6108,6 +6131,7 @@
 	        btns.forEach(function (el) {
 	            el.style.width = ""
 	        })
+	        this._element.style.width = this.$container.style.width = ""
 
 	        var btnWidth = this.btnWidth === "auto" ?
 	                Math.max(this.$on.offsetWidth, this.$off.offsetWidth) :
@@ -6128,13 +6152,12 @@
 	            }
 	        }
 
-	        var total = labelWidth + btnWidth * 2
-	        var offset = this.$container.offsetWidth
-
-	        avalon(this.$container).width(offset);
+	        var total = labelWidth + btnWidth * 2 + 10
+	        var offset = this.$container.offsetWidth 
+	        avalon(this.$container).width(total)
 	        var width = btnWidth + labelWidth
-	        this.$animateDistance = btnWidth - (total - offset)
-	        avalon(this._element).width(width)
+	        this.$animateDistance = btnWidth + Math.min(total - offset,0)
+	        avalon(this._element).width(width+4)
 	        return width
 	    }
 	})
@@ -6203,7 +6226,7 @@
 	                }
 	                break
 	        }
-	        if (match[1] ) {
+	        if (match[1]) {
 	            avalon.fireDom(vm._element, "focus")
 	            avalon(vm._element).addClass("flipswitch-focused")
 	        }
@@ -6233,7 +6256,7 @@
 	avalon.bind(document, "touchmove", labelCallback)
 	avalon.bind(document, "mouseup", labelCallback)
 	avalon.bind(document, "touchend", labelCallback)
-
+	// http://www.bootstrap-switch.org/examples.html
 	//移动迷宫 http://pan.baidu.com/s/1hquFE8c
 
 
@@ -6891,7 +6914,7 @@
 
 
 	// module
-	exports.push([module.id, ".flipswitch {\n  display: inline-block;\n  direction: ltr;\n  cursor: pointer;\n  border-radius: 0.25rem;\n  border: 1px solid;\n  border-color: #0275d8;\n  position: relative;\n  text-align: left;\n  overflow: hidden;\n  line-height: 8px;\n  z-index: 0;\n  box-sizing: border-box;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n  vertical-align: middle;\n  -webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n  -moz-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n  -ms-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n  -o-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n  transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s; }\n  .flipswitch .flipswitch-container {\n    display: inline-block;\n    top: 0;\n    border-radius: 0.25rem;\n    -webkit-transform: translate3d(0, 0, 0);\n    -moz-transform: translate3d(0, 0, 0);\n    -ms-transform: translate3d(0, 0, 0);\n    transform: translate3d(0, 0, 0); }\n  .flipswitch .flipswitch-handle-on,\n  .flipswitch .flipswitch-handle-off,\n  .flipswitch .flipswitch-label {\n    box-sizing: border-box;\n    -webkit-box-sizing: border-box;\n    -moz-box-sizing: border-box;\n    cursor: pointer;\n    display: inline-block !important;\n    height: 100%;\n    padding: 6px 12px;\n    font-size: 1rem;\n    line-height: 1rem; }\n  .flipswitch .flipswitch-handle-on,\n  .flipswitch .flipswitch-handle-off {\n    text-align: center;\n    z-index: 1; }\n    .flipswitch .flipswitch-handle-on.flipswitch-primary,\n    .flipswitch .flipswitch-handle-off.flipswitch-primary {\n      color: #fff;\n      background: #0275d8; }\n    .flipswitch .flipswitch-handle-on.flipswitch-info,\n    .flipswitch .flipswitch-handle-off.flipswitch-info {\n      color: #fff;\n      background: #5bc0de; }\n    .flipswitch .flipswitch-handle-on.flipswitch-success,\n    .flipswitch .flipswitch-handle-off.flipswitch-success {\n      color: #fff;\n      background: #5cb85c; }\n    .flipswitch .flipswitch-handle-on.flipswitch-warning,\n    .flipswitch .flipswitch-handle-off.flipswitch-warning {\n      background: #f0ad4e;\n      color: #fff; }\n    .flipswitch .flipswitch-handle-on.flipswitch-danger,\n    .flipswitch .flipswitch-handle-off.flipswitch-danger {\n      color: #fff;\n      background: #d9534f; }\n    .flipswitch .flipswitch-handle-on.flipswitch-default,\n    .flipswitch .flipswitch-handle-off.flipswitch-default {\n      color: #000;\n      background: #eeeeee; }\n  .flipswitch .flipswitch-label {\n    text-align: center;\n    margin-top: -1px;\n    margin-bottom: -1px;\n    z-index: 100;\n    color: #333;\n    background: #fff; }\n  .flipswitch .flipswitch-handle-on {\n    border-bottom-left-radius: -0.75rem;\n    border-top-left-radius: -0.75rem; }\n  .flipswitch .flipswitch-handle-off {\n    border-bottom-right-radius: -0.75rem;\n    border-top-right-radius: -0.75rem; }\n  .flipswitch input[type='radio'],\n  .flipswitch input[type='checkbox'] {\n    position: absolute !important;\n    top: 0;\n    left: 0;\n    margin: 0;\n    z-index: -1;\n    opacity: 0;\n    filter: alpha(opacity=0); }\n .flipswitch.flipswitch-xs .flipswitch-handle-on,\n  .flipswitch.flipswitch-xs .flipswitch-handle-off,\n  .flipswitch.flipswitch-xs .flipswitch-label {\n    padding: 1px 5px;\n    font-size: 0.85rem;\n    line-height: 1.5; }\n .flipswitch.flipswitch-sm .flipswitch-handle-on,\n  .flipswitch.flipswitch-sm .flipswitch-handle-off,\n  .flipswitch.flipswitch-sm .flipswitch-label {\n    padding: 5px 10px;\n    font-size: 0.85rem;\n    line-height: 1.5; }\n  .flipswitch.flipswitch-lg .flipswitch-handle-on,\n  .flipswitch.flipswitch-lg .flipswitch-handle-off,\n  .flipswitch.flipswitch-lg .flipswitch-label {\n    padding: 6px 16px;\n    font-size: 1.25rem;\n    line-height: 1.33333; }\n  .flipswitch.flipswitch-disabled, .flipswitch.flipswitch-readonly, .flipswitch.flipswitch-indeterminate {\n    cursor: default !important; }\n    .flipswitch.flipswitch-disabled .flipswitch-handle-on,\n    .flipswitch.flipswitch-disabled .flipswitch-handle-off,\n    .flipswitch.flipswitch-disabled .flipswitch-label, .flipswitch.flipswitch-readonly .flipswitch-handle-on,\n    .flipswitch.flipswitch-readonly .flipswitch-handle-off,\n    .flipswitch.flipswitch-readonly .flipswitch-label, .flipswitch.flipswitch-indeterminate .flipswitch-handle-on,\n    .flipswitch.flipswitch-indeterminate .flipswitch-handle-off,\n    .flipswitch.flipswitch-indeterminate .flipswitch-label {\n      opacity: 0.5;\n      filter: alpha(opacity=50);\n      cursor: default !important; }\n  .flipswitch.flipswitch-animate .flipswitch-container {\n    -webkit-transition: margin-left 0.5s;\n    -moz-transition: margin-left 0.5s;\n    -ms-transition: margin-left 0.5s;\n    -o-transition: margin-left 0.5s;\n    transition: margin-left 0.5s; }\n  .flipswitch.flipswitch-focused {\n    border-color: #66afe9;\n    outline: 0;\n    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);\n    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);\n    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6); }\n  .flipswitch.flipswitch-on .flipswitch-label {\n    border-bottom-right-radius: -0.75rem;\n    border-top-right-radius: -0.75rem; }\n  .flipswitch.flipswitch-off .flipswitch-label {\n    border-bottom-left-radius: -0.75rem;\n    border-top-left-radius: -0.75rem; }\n", ""]);
+	exports.push([module.id, ".flipswitch {\n  display: inline-block;\n  direction: ltr;\n  cursor: pointer;\n  border-radius: 0.25rem;\n  border: 1px solid;\n  border-color: #0275d8;\n  position: relative;\n  text-align: left;\n  overflow: hidden;\n  line-height: 8px;\n  z-index: 0;\n  box-sizing: border-box;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n  vertical-align: middle;\n  -webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n  -moz-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n  -ms-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n  -o-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;\n  transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s; }\n  .flipswitch .flipswitch-container {\n    display: inline-block;\n    top: 0;\n    border-radius: 0.25rem;\n    -webkit-transform: translate3d(0, 0, 0);\n    -moz-transform: translate3d(0, 0, 0);\n    -ms-transform: translate3d(0, 0, 0);\n    transform: translate3d(0, 0, 0); }\n  .flipswitch .flipswitch-handle-on,\n  .flipswitch .flipswitch-handle-off,\n  .flipswitch .flipswitch-label {\n    box-sizing: border-box;\n    -webkit-box-sizing: border-box;\n    -moz-box-sizing: border-box;\n    cursor: pointer;\n    display: inline-block !important;\n    height: 100%;\n    padding: 6px 12px;\n    font-size: 1rem;\n    line-height: 1rem; }\n  .flipswitch .flipswitch-handle-on,\n  .flipswitch .flipswitch-handle-off {\n    text-align: center;\n    z-index: 1; }\n    .flipswitch .flipswitch-handle-on.flipswitch-primary,\n    .flipswitch .flipswitch-handle-off.flipswitch-primary {\n      color: #fff;\n      background: #0275d8; }\n    .flipswitch .flipswitch-handle-on.flipswitch-info,\n    .flipswitch .flipswitch-handle-off.flipswitch-info {\n      color: #fff;\n      background: #5bc0de; }\n    .flipswitch .flipswitch-handle-on.flipswitch-success,\n    .flipswitch .flipswitch-handle-off.flipswitch-success {\n      color: #fff;\n      background: #5cb85c; }\n    .flipswitch .flipswitch-handle-on.flipswitch-warning,\n    .flipswitch .flipswitch-handle-off.flipswitch-warning {\n      background: #f0ad4e;\n      color: #fff; }\n    .flipswitch .flipswitch-handle-on.flipswitch-danger,\n    .flipswitch .flipswitch-handle-off.flipswitch-danger {\n      color: #fff;\n      background: #d9534f; }\n    .flipswitch .flipswitch-handle-on.flipswitch-default,\n    .flipswitch .flipswitch-handle-off.flipswitch-default {\n      color: #000;\n      background: #eeeeee; }\n  .flipswitch .flipswitch-label {\n    text-align: center;\n    margin-top: -1px;\n    margin-bottom: -1px;\n    z-index: 100;\n    color: #333;\n    background: #fff; }\n  .flipswitch .flipswitch-handle-on {\n    border-bottom-left-radius: -0.75rem;\n    border-top-left-radius: -0.75rem; }\n  .flipswitch .flipswitch-handle-off {\n    border-bottom-right-radius: -0.75rem;\n    border-top-right-radius: -0.75rem; }\n  .flipswitch input[type='radio'],\n  .flipswitch input[type='checkbox'] {\n    position: absolute !important;\n    top: 0;\n    left: 0;\n    margin: 0;\n    z-index: -1;\n    opacity: 0;\n    filter: alpha(opacity=0); }\n  .flipswitch.flipswitch-xs .flipswitch-handle-on,\n  .flipswitch.flipswitch-xs .flipswitch-handle-off,\n  .flipswitch.flipswitch-xs .flipswitch-label {\n    padding: 1px 5px;\n    font-size: 0.75rem;\n    line-height: 1rem; }\n  .flipswitch.flipswitch-sm .flipswitch-handle-on,\n  .flipswitch.flipswitch-sm .flipswitch-handle-off,\n  .flipswitch.flipswitch-sm .flipswitch-label {\n    padding: 5px 10px;\n    font-size: 0.85rem;\n    line-height: 1rem; }\n  .flipswitch.flipswitch-lg .flipswitch-handle-on,\n  .flipswitch.flipswitch-lg .flipswitch-handle-off,\n  .flipswitch.flipswitch-lg .flipswitch-label {\n    padding: 10px 16px;\n    font-size: 1.25rem;\n    line-height: 1rem; }\n  .flipswitch.flipswitch-disabled, .flipswitch.flipswitch-readonly, .flipswitch.flipswitch-indeterminate {\n    cursor: default !important; }\n    .flipswitch.flipswitch-disabled .flipswitch-handle-on,\n    .flipswitch.flipswitch-disabled .flipswitch-handle-off,\n    .flipswitch.flipswitch-disabled .flipswitch-label, .flipswitch.flipswitch-readonly .flipswitch-handle-on,\n    .flipswitch.flipswitch-readonly .flipswitch-handle-off,\n    .flipswitch.flipswitch-readonly .flipswitch-label, .flipswitch.flipswitch-indeterminate .flipswitch-handle-on,\n    .flipswitch.flipswitch-indeterminate .flipswitch-handle-off,\n    .flipswitch.flipswitch-indeterminate .flipswitch-label {\n      opacity: 0.5;\n      filter: alpha(opacity=50);\n      cursor: default !important; }\n  .flipswitch.flipswitch-animate .flipswitch-container {\n    -webkit-transition: margin-left 0.5s;\n    -moz-transition: margin-left 0.5s;\n    -ms-transition: margin-left 0.5s;\n    -o-transition: margin-left 0.5s;\n    transition: margin-left 0.5s; }\n  .flipswitch.flipswitch-focused {\n    border-color: #66afe9;\n    outline: 0;\n    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);\n    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);\n    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6); }\n  .flipswitch.flipswitch-on .flipswitch-label {\n    border-bottom-right-radius: -0.75rem;\n    border-top-right-radius: -0.75rem; }\n  .flipswitch.flipswitch-off .flipswitch-label {\n    border-bottom-left-radius: -0.75rem;\n    border-top-left-radius: -0.75rem; }\n", ""]);
 
 	// exports
 

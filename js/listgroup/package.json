@@ -1,7 +1,7 @@
 {
-  "name": "inputgroup",
+  "name": "listgroup",
   "version": "1.0.0",
-  "description": "bootstrap inputgroup",
+  "description": "bootstrap listgroup",
   "main": "main.js",
   "dependencies": {},
   "devDependencies": {

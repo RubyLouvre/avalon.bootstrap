@@ -172,7 +172,7 @@ $uiname: "flipswitch";
     .#{$uiname}-label {
       padding: $padding-xs-vertical $padding-xs-horizontal;
       font-size: $font-size-xs;
-      line-height: $line-height-xs;
+      line-height: $line-height-computed;//$line-height-xs;
     }
   }  
 
@@ -183,7 +183,7 @@ $uiname: "flipswitch";
     .#{$uiname}-label {
       padding: $padding-sm-vertical $padding-sm-horizontal;
       font-size: $font-size-sm;
-      line-height: $line-height-sm;
+      line-height:$line-height-computed; //$line-height-sm;
     }
   }
 
@@ -192,9 +192,9 @@ $uiname: "flipswitch";
     .#{$uiname}-handle-on,
     .#{$uiname}-handle-off,
     .#{$uiname}-label {
-      padding: $padding-base-vertical $padding-lg-horizontal;
+      padding: $padding-lg-vertical $padding-lg-horizontal;
       font-size: $font-size-lg;
-      line-height: $line-height-lg;
+      line-height:$line-height-computed;
     }
   }
 
