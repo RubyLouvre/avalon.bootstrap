@@ -64,7 +64,7 @@
 	 http://weibo.com/jslouvre/
 	 
 	 Released under the MIT license
-	 avalon.shim.js 1.5.5 built in 2015.10.31
+	 avalon.shim.js 1.5.5 built in 2015.11.4
 	 support IE6+ and other browsers
 	 ==================================================*/
 	(function(global, factory) {
@@ -3254,13 +3254,17 @@
 	                            name: "widget"
 	                        })
 	                        if (avalon.components[fullName]) {
-	                            avalon.component(fullName)
+	                            (function (name) {//确保所有ms-attr-name扫描完再处理
+	                                setTimeout(function () {
+	                                    avalon.component(name)
+	                                })
+	                            })(fullName)
 	                        }
 	                    }
 	                }
-	               
+
 	                scanTag(node, vmodels) //扫描元素节点
-	                
+
 	                if (node.msHasEvent) {
 	                    avalon.fireDom(node, "datasetchanged", {
 	                        bubble: node.msHasEvent
@@ -3533,13 +3537,12 @@
 	                    elem.parentNode.replaceChild(child, elem)
 	                    child.msResolved = 1
 	                    var cssText = elem.style.cssText
-
 	                    var className = elem.className
 	                    elem = host.element = child
+	                    elem.style.cssText = cssText
 	                    if(className){
 	                       avalon(elem).addClass(className)
 	                    }
-	                     elem.style.cssText = cssText
 	                }
 	                if (keepContainer) {
 	                    keepContainer.appendChild(elem)
@@ -3938,7 +3941,7 @@
 	        function compositionEnd() {
 	            composing = false
 	        }
-	        var updateVModel = function () {
+	        var updateVModel = function (e) {
 	            var val = elem.value //防止递归调用形成死循环
 	            if (composing || val === binding.oldValue || binding.pipe === null) //处理中文输入法在minlengh下引发的BUG
 	                return
@@ -4120,9 +4123,6 @@
 	                    })
 	                }
 	                break
-	        }
-	        if (binding.xtype !== "select") {
-	            binding.changed.call(elem, curValue, binding)
 	        }
 	    }
 	})
@@ -6420,8 +6420,8 @@
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../../usr/local/lib/node_modules/css-loader/index.js!./bootstrap.css", function() {
-				var newContent = require("!!./../../../../usr/local/lib/node_modules/css-loader/index.js!./bootstrap.css");
+			module.hot.accept("!!./../../../../../usr/local/lib/node_modules/css-loader/index.js!./bootstrap.css", function() {
+				var newContent = require("!!./../../../../../usr/local/lib/node_modules/css-loader/index.js!./bootstrap.css");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});

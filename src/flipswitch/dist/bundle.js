@@ -55,7 +55,6 @@
 	})
 	vm.$watch("size", function(a){
 	    var flip = avalon.vmodels.size
-	    console.log(a, flip)
 	    if(flip){
 	        flip.size = a
 	    }
@@ -6545,8 +6544,8 @@
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../../usr/local/lib/node_modules/css-loader/index.js!./bootstrap.css", function() {
-				var newContent = require("!!./../../../../usr/local/lib/node_modules/css-loader/index.js!./bootstrap.css");
+			module.hot.accept("!!./../../../../../usr/local/lib/node_modules/css-loader/index.js!./bootstrap.css", function() {
+				var newContent = require("!!./../../../../../usr/local/lib/node_modules/css-loader/index.js!./bootstrap.css");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});

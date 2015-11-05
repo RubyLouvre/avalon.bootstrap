@@ -64,7 +64,7 @@
 	 http://weibo.com/jslouvre/
 	 
 	 Released under the MIT license
-	 avalon.shim.js 1.5.5 built in 2015.10.27
+	 avalon.shim.js 1.5.5 built in 2015.11.4
 	 support IE6+ and other browsers
 	 ==================================================*/
 	(function(global, factory) {
@@ -1183,7 +1183,7 @@
 	}
 
 	function observeObject(source, options) {
-	    if (!source || (source.$id && source.$accessors)) {
+	    if (!source || (source.$id && source.$accessors) || (source.nodeName && source.nodeType > 0)) {
 	        return source
 	    }
 	    //source为原对象,不能是元素节点或null
@@ -1236,7 +1236,7 @@
 	        var value = source[name]
 	        if (!$$skipArray[name])
 	            hasOwn[name] = true
-	        if (typeof value === "function" || (value && value.nodeType) ||
+	        if (typeof value === "function" || (value && value.nodeName && value.nodeType > 0) ||
 	                (!force[name] && (name.charAt(0) === "$" || $$skipArray[name] || $skipArray[name]))) {
 	            skip.push(name)
 	        } else if (isComputed(value)) {
@@ -3239,7 +3239,7 @@
 	    for (var i = 0, node; node = nodes[i++]; ) {
 	        switch (node.nodeType) {
 	            case 1:
-	                var elem = node, fn
+	                var elem = node
 	                if (!elem.msResolved && elem.parentNode && elem.parentNode.nodeType === 1) {
 	                    var library = isWidget(elem)
 	                    if (library) {
@@ -3254,11 +3254,17 @@
 	                            name: "widget"
 	                        })
 	                        if (avalon.components[fullName]) {
-	                            avalon.component(fullName)
+	                            (function (name) {//确保所有ms-attr-name扫描完再处理
+	                                setTimeout(function () {
+	                                    avalon.component(name)
+	                                })
+	                            })(fullName)
 	                        }
 	                    }
 	                }
-	                 scanTag(node, vmodels) //扫描元素节点
+
+	                scanTag(node, vmodels) //扫描元素节点
+
 	                if (node.msHasEvent) {
 	                    avalon.fireDom(node, "datasetchanged", {
 	                        bubble: node.msHasEvent
@@ -3526,12 +3532,17 @@
 	                    }
 	                }
 	                slots = null
-	                var child = elem.firstChild
+	                var child = elem.children[0] || elem.firstChild
 	                if (keepReplace) {
-	                    child = elem.firstChild
 	                    elem.parentNode.replaceChild(child, elem)
 	                    child.msResolved = 1
+	                    var cssText = elem.style.cssText
+	                    var className = elem.className
 	                    elem = host.element = child
+	                    elem.style.cssText = cssText
+	                    if(className){
+	                       avalon(elem).addClass(className)
+	                    }
 	                }
 	                if (keepContainer) {
 	                    keepContainer.appendChild(elem)
@@ -3930,7 +3941,7 @@
 	        function compositionEnd() {
 	            composing = false
 	        }
-	        var updateVModel = function () {
+	        var updateVModel = function (e) {
 	            var val = elem.value //防止递归调用形成死循环
 	            if (composing || val === binding.oldValue || binding.pipe === null) //处理中文输入法在minlengh下引发的BUG
 	                return
@@ -4010,7 +4021,6 @@
 	                    if (val + "" !== binding.oldValue) {
 	                        try {
 	                            binding.setter(val)
-	                            callback.call(elem, val)
 	                        } catch (ex) {
 	                            log(ex)
 	                        }
@@ -4067,10 +4077,13 @@
 	                if (curValue !== this.oldValue) {
 	                    var fixCaret = false
 	                    if (elem.msFocus) {
-	                        var pos = getCaret(elem)
-	                        if (pos.start === pos.end) {
-	                            pos = pos.start
-	                            fixCaret = true
+	                        try {
+	                            var pos = getCaret(elem)
+	                            if (pos.start === pos.end) {
+	                                pos = pos.start
+	                                fixCaret = true
+	                            }
+	                        } catch (e) {
 	                        }
 	                    }
 	                    elem.value = this.oldValue = curValue
@@ -4101,18 +4114,15 @@
 	            case "select":
 	                //必须变成字符串后才能比较
 	                binding._value = value
-	                if(!elem.msHasEvent){
+	                if (!elem.msHasEvent) {
 	                    elem.msHasEvent = "selectDuplex"
 	                    //必须等到其孩子准备好才触发
-	                }else{
+	                } else {
 	                    avalon.fireDom(elem, "datasetchanged", {
 	                        bubble: elem.msHasEvent
 	                    })
 	                }
 	                break
-	        }
-	        if (binding.xtype !== "select") {
-	            binding.changed.call(elem, curValue,binding)
 	        }
 	    }
 	})
@@ -4250,7 +4260,7 @@
 	            var range = ctrl.createTextRange()
 	            range.collapse(true);
 	            range.moveStart("character", begin)
-	           // range.moveEnd("character", end) #1125
+	            // range.moveEnd("character", end) #1125
 	            range.select()
 	        }, 17)
 	    } else {
@@ -6302,8 +6312,8 @@
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../../usr/local/lib/node_modules/css-loader/index.js!./bootstrap.css", function() {
-				var newContent = require("!!./../../../../usr/local/lib/node_modules/css-loader/index.js!./bootstrap.css");
+			module.hot.accept("!!./../../../../../usr/local/lib/node_modules/css-loader/index.js!./bootstrap.css", function() {
+				var newContent = require("!!./../../../../../usr/local/lib/node_modules/css-loader/index.js!./bootstrap.css");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
