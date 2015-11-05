@@ -1,0 +1,4 @@
+bootstrap为源bootstrap的公共样式的SCSS
+
+其他样式打散到各个组件中
+
