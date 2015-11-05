@@ -11,8 +11,8 @@ module.exports = {
     resolve: {
         extensions: ['.js',"",".css"],
         alias: {
-            avalon: '../avalon.shim',
-            "bootstrap.css": '../../css/bootstrap.css'
+            avalon: '../vendor/avalon.shim',
+            "bootstrap.css": '../bootstrap/bootstrap.css'
         }
     }
 }
