@@ -5959,7 +5959,7 @@
 	    return scrollbarWidth;
 	}
 
-	function isFFWithBuggyScrollbar() {
+	var isFFWithBuggyScrollbar = (function () {
 	    var isOSXFF, ua, version;
 	    ua = window.navigator.userAgent;
 	    isOSXFF = /(?=.+Mac OS X)(?=.+Firefox)/.test(ua);
@@ -5971,7 +5971,7 @@
 	        version = version[0].replace(/\D+/g, '');
 	    }
 	    return isOSXFF && +version > 23;
-	}
+	})()
 	var BROWSER_SCROLLBAR_WIDTH = 0
 	avalon.component("ms:scrollbar", {
 	    iOSNativeScrolling: false,
@@ -5992,6 +5992,8 @@
 	    isBeingDragged: false,
 	    sliderHeight: 0,
 	    sliderY: 0,
+	    isActive: true,
+	    scrollRAF: 0,
 	    contentScrollTop: 0,
 	    previousPosition: 0,
 	    prevScrollTop: NaN,
@@ -6260,7 +6262,7 @@
 	    },
 	    generate: function () {
 	        var cssRule
-	        if (BROWSER_SCROLLBAR_WIDTH === 0 && isFFWithBuggyScrollbar()) {
+	        if (BROWSER_SCROLLBAR_WIDTH === 0 && isFFWithBuggyScrollbar) {
 	            var currentPadding = parseFloat(this.content.css('padding-right')) || 0
 	            cssRule = {
 	                right: -14,
@@ -6296,7 +6298,10 @@
 	        this.scroll()
 	        this.onSliderMouseDown(e)
 	    },
-	    onPaneWeel: function (e) {
+	    onPaneWheel: function (e) {
+	        if (e == null) {
+	            return;
+	        }
 	        this.sliderY += (e.wheelDelta > 0 ? 1 : -1)
 	        this.scroll()
 	    },
@@ -6354,32 +6359,32 @@
 	    }
 	})
 
-	function delegate(event, callback) {
-	    var target = event.target
-	    while (target && target.nodeType === 1) {
-	        var match = (target.className.match(/nano\-(slider|content|pane)/) || [])[1]
-	        if (match) {
-	            var el = target
-	            while (target && target.nodeType === 1) {
-	                var vm = target["ms-scrollbar-vm"]
-	                if (vm) {
-	                    callback(match, el, vm)
-	                    break
-	                }
-	            }
-	        }
-	        target = target.parentNode
-	    }
-	}
+	//function delegate(event, callback) {
+	//    var target = event.target
+	//    while (target && target.nodeType === 1) {
+	//        var match = (target.className.match(/nano\-(slider|content|pane)/) || [])[1]
+	//        if (match) {
+	//            var el = target
+	//            while (target && target.nodeType === 1) {
+	//                var vm = target["ms-scrollbar-vm"]
+	//                if (vm) {
+	//                    callback(match, el, vm)
+	//                    break
+	//                }
+	//            }
+	//        }
+	//        target = target.parentNode
+	//    }
+	//}
 
 	avalon.ready(function () {
-	   
+
 	    var body = document.body
 
 
 	    avalon.bind(document, "mousemove", function (event) {
 	        if (activeVm) {
-	            avalon.onMouseMove(event)
+	            activeVm.onMouseMove(event)
 	        }
 	    })
 	    avalon.bind(document, "mouseup", function (event) {
@@ -6391,7 +6396,7 @@
 	    avalon.bind(window, "resize", function () {
 	        for (var i = 0, vm; vm = allVm[i++]; ) {
 	            if (!vm.disableResize) {
-	                vm.onReset()
+	                vm.reset()
 	            }
 	        }
 	    })
