@@ -44,15 +44,15 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	__webpack_require__(1)
+	var avalon = __webpack_require__(1)
+
 	__webpack_require__(2)
-	__webpack_require__(4)
 
-	__webpack_require__(5)
+	__webpack_require__(7)
 
-	__webpack_require__(10)
 	avalon.define({
-	    $id: "test"
+	    $id: "test",
+	    ee: "111"
 	})
 
 /***/ },
@@ -5931,518 +5931,505 @@
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var avalon = __webpack_require__(3)
+	/* 
+	 * https://github.com/jamesflorentino/nanoScrollerJS
+	 */
+	var avalon = __webpack_require__(1)
+	__webpack_require__(3);
 
-	avalon.component("ms:button", {
-	    color: "primary", //primary secondary success warning danger link
-	    outline: false,
-	    $slot: "content",
-	    size: "", //lg sm
-	    content: "",
-	    $init: function (vm, element) {
-	        element.setAttribute("ms-class-12", "disabled:disabled")
-	    },
-	    $template: "{{content|html}}",
-	    block: false, //是否占满一行
-	    active: false,
-	    disabled: false,
+	var isIE7 = document.documentMode === 7 || /msie 7./i.test(window.navigator.appVersion)
+	var transform = avalon.cssName('transform')
+	var hasTransform = typeof transform === "string"
+	var activeVm = null
+	var allVm = []
+	var rAF = window.requestAnimationFrame
+	var cAF = window.cancelAnimationFrame
+	function getBrowserScrollbarWidth() {
+	    var outer, outerStyle, scrollbarWidth;
+	    outer = document.createElement('div');
+	    outerStyle = outer.style;
+	    outerStyle.position = 'absolute';
+	    outerStyle.width = '100px';
+	    outerStyle.height = '100px';
+	    outerStyle.overflow = "scroll";
+	    outerStyle.top = '-9999px';
+	    document.body.appendChild(outer);
+	    scrollbarWidth = outer.offsetWidth - outer.clientWidth;
+	    document.body.removeChild(outer);
+	    return scrollbarWidth;
+	}
+
+	function isFFWithBuggyScrollbar() {
+	    var isOSXFF, ua, version;
+	    ua = window.navigator.userAgent;
+	    isOSXFF = /(?=.+Mac OS X)(?=.+Firefox)/.test(ua);
+	    if (!isOSXFF) {
+	        return false;
+	    }
+	    version = /Firefox\/\d{2}\./.exec(ua);
+	    if (version) {
+	        version = version[0].replace(/\D+/g, '');
+	    }
+	    return isOSXFF && +version > 23;
+	}
+	var BROWSER_SCROLLBAR_WIDTH = 0
+	avalon.component("ms:scrollbar", {
+	    iOSNativeScrolling: false,
+	    preventPageScrolling: false,
+	    disableResize: false,
+	    alwaysVisible: false,
+	    flashDelay: 1500,
+	    sliderMinHeight: 20,
+	    sliderMaxHeight: null,
+	    $slot: "__content",
+	    $replace: true,
+	    $template: '<div class="nano">' +
+	            '<div class="nano-content">{{__content|html}}</div>' +
+	            '<div class="nano-pane"><div class="nano-slider"></div></div>' +
+	            '</div>',
+	    __content: "",
+	    position: 0, //top, bottom, #id, number
+	    isBeingDragged: false,
+	    sliderHeight: 0,
+	    sliderY: 0,
+	    contentScrollTop: 0,
+	    previousPosition: 0,
+	    prevScrollTop: NaN,
+	    maxSliderTop: 0,
+	    contentHeight: 0,
+	    paneHeight: 0,
+	    paneOuterHeight: 0,
+	    paneTop: 0,
+	    stopped: 0,
+	    onScrolling: avalon.noop, //需要用户重写
+	    onScrollEnd: avalon.noop, //需要用户重写
+	    onScrollTop: avalon.noop, //需要用户重写
 	    $dispose: function (vm, element) {
-	        element["ms-button-vm"] = void 0
-	        element.innerHTML = ""
+	        element["ms-scrollar-vm"] = null
+	        avalon.Array.remove(allVm, vm)
 	    },
 	    $ready: function (vm, element) {
-	        var btn = avalon(element)
-	        element["ms-button-vm"] = vm
-	        btn.attr("role", "button")
-	        btn.addClass("btn")
-	        if (vm.color) {
-	            btn.addClass("btn-" + vm.color + (!!vm.outline ? "-outline" : ""))
+	        if (!BROWSER_SCROLLBAR_WIDTH) {
+	            BROWSER_SCROLLBAR_WIDTH = getBrowserScrollbarWidth()
 	        }
-	        if (vm.size) {
-	            btn.addClass("btn-" + vm.size)
+	        //  avalon.scan(element, vm)
+	        vm._element = element
+	        console.log(vm.__content)
+	        element["vm-scrollbar-vm"] = vm
+	        avalon.Array.ensure(allVm, vm)
+	        var children = element.children
+	        for (var i = 0, el; el = children[i++]; ) {
+	            if (/nano\-content/.test(el.className)) {
+	                vm.content = avalon(el)
+	            } else if (/nano\-pane/.test(el.className)) {
+	                vm.pane = avalon(el)
+	            }
 	        }
-	        if (vm.block) {
-	            btn.addClass("btn-block")
+	        vm.slider = vm.pane && avalon(vm.pane[0].getElementsByTagName("div")[0])
+	        vm.content.tabIndex = vm.tabIndex || -1
+	        if (vm.iOSNativeScrolling && element.style.WebkitOverflowScrolling != null) {
+	            vm.nativeScrolling()
+	        } else {
+	            vm.generate()
 	        }
-	        function activate(a, b) {
-	            setTimeout(function () {
-	                btn.toggleClass("active", a)
-	                var input = element.getElementsByTagName("input")[0]
-	                input && (input.checked = a)
-	                element.setAttribute('aria-pressed', a)
-	                if (!b)
-	                    avalon.fireDom(element, "change")
+	        function switchPosition(value) {
+	            if (vm.isActive) {
+	                if (isFinite(value)) {
+	                    value = +value
+	                    if (value < 0) {
+	                        vm.scrollTop(vm.contentHeight - vm.content.height() - value)
+	                    } else {
+	                        vm.scrollTop(value)
+	                    }
+
+	                } else if (value.charAt(0) === "#") {
+	                    var el = document.getElementById(value.slice(1))
+	                    if (el && avalon.contains(element, el)) {
+	                        vm.scrollTop(el.offsetTop)
+	                    }
+	                } else if (value === "top") {
+	                    vm.scrollTop(value)
+	                } else if (value === "bottom") {
+	                    vm.scrollTop(vm.contentHeight - vm.content.height())
+	                }
+	            }
+
+	        }
+
+	        vm.$watch("position", switchPosition)
+
+	        switchPosition(vm.position)
+
+
+	        if (!vm.iOSNativeScrolling) {
+	            vm.slider.bind("mousedown", function (e) {
+	                vm.onSliderMouseDown(e)
+	            });
+	            vm.pane.bind("mousedown", function (e) {
+	                vm.onSliderMouseDown(e)
+	            });
+	            String("scroll,mousewheel").replace(/\w+/g, function (method) {
+	                vm.pane.bind(method, function (e) {
+	                    vm.onPaneWheel(e)
+	                })
+
 	            })
 	        }
 
-	        vm.$watch("active", activate)
-	        activate(!!vm.active, true)
+	        String("scroll,mousewheel,touchmove").replace(/\w+/g, function (method) {
+	            vm.content.bind(method, function (event) {
+	                vm.onContentScroll(event)
+	            })
+	        })
 
+	        vm.reset()
+	    },
+	    scrollTop: function (offsetY) {
+	        if (!this.isActive) {
+	            return;
+	        }
+	        this.content.scrollTop(+offsetY)
+	        this.onPaneWheel()
+
+	        this.stop().restore();
+	        return this;
+	    },
+	    reset: function () {
+	        if (!this.pane) {//如果没有生成滚动器的容器...
+	            this.generate().stop()
+	        }
+
+	        if (this.iOSNativeScrolling) {
+	            this.contentHeight = this.content[0].scrollHeight
+	            return
+	        }
+	        if (this.stopped) {
+	            this.restore()
+	        }
+	        var root = avalon(this._element)
+	        var content = this.content[0];
+	        var contentStyle = content.style;
+	        var contentStyleOverflowY = contentStyle.overflowY
+	        var isScrolling = contentStyleOverflowY === "scroll"
+	        if (isIE7) {
+	            this.content.css({
+	                height: this.content.height()
+	            })
+	        }
+
+	        var contentHeight = content.scrollHeight + BROWSER_SCROLLBAR_WIDTH
+	        var parentMaxHeight = parseInt(root.css("max-height"), 10);
+	        if (parentMaxHeight > 0) {
+	            root.height("");
+	            root.height(content.scrollHeight > parentMaxHeight ?
+	                    parentMaxHeight : content.scrollHeight);
+	        }
+
+	        var paneHeight = this.pane.outerHeight();
+	        var paneTop = parseInt(this.pane.css('top'), 10);
+	        var paneBottom = parseInt(this.pane.css('bottom'), 10);
+	        var paneOuterHeight = paneHeight + paneTop + paneBottom;
+	        var sliderHeight = Math.round(paneOuterHeight / contentHeight * paneHeight);
+	        if (sliderHeight < this.sliderMinHeight) {
+	            sliderHeight = this.sliderMinHeight;
+	        } else if ((this.sliderMaxHeight != null) && sliderHeight > this.sliderMaxHeight) {
+	            sliderHeight = this.sliderMaxHeight;
+	        }
+	        if (isScrolling && contentStyle.overflowX !== "scroll") {
+	            sliderHeight += BROWSER_SCROLLBAR_WIDTH;
+	        }
+	        this.maxSliderTop = paneOuterHeight - sliderHeight
+	        this.contentHeight = contentHeight
+	        this.paneHeight = paneHeight
+	        this.paneOuterHeight = paneOuterHeight
+	        this.sliderHeight = sliderHeight
+	        this.paneTop = paneTop
+	        this.slider.height(sliderHeight)
+	        this.scroll()
+	        this.pane[0].style.display = ""
+	        this.isActive = true
+	        //如果容器完全显示里面的容器,并且没设置scroll
+	        if ((content.scrollHeight === content.clientHeight) ||
+	                (this.pane.outerHeight(true) >= content.scrollHeight &&
+	                        !isScrolling)) {
+	            this.pane[0].style.display = "none"
+	            this.isActive = false;
+	        } else if (root[0].clientHeight === content.scrollHeight &&
+	                isScrolling) {
+	            this.slider[0].style.display = "none"
+	        } else {
+	            this.slider[0].style.display = ""
+	        }
+	        this.pane.css({
+	            opacity: (this.alwaysVisible ? 1 : ''),
+	            visibility: (this.alwaysVisible ? 'visible' : '')
+	        })
+	        var contentPosition = this.content.css('position');
+	        if (contentPosition === 'static' || contentPosition === 'relative') {
+	            var right = parseInt(this.content.css('right'), 10);
+	            if (right) {
+	                this.$content.css({
+	                    right: '',
+	                    marginRight: right
+	                })
+	            }
+	        }
+	        return this
+
+	    },
+	    setOnScrollStyles: function () {
+	        var cssValue;
+	        if (hasTransform) {
+	            cssValue = {};
+	            cssValue[transform] = "translate(0, " + this.sliderTop + "px)";
+	        } else {
+	            cssValue = {
+	                top: this.sliderTop
+	            };
+	        }
+	        if (rAF) {
+	            if (cAF && this.scrollRAF) {
+	                cAF(this.scrollRAF);
+	            }
+	            var _this = this
+	            this.scrollRAF = rAF(function () {
+	                _this.scrollRAF = null;
+	                return _this.slider.css(cssValue)
+	            })
+	        } else {
+	            this.slider.css(cssValue);
+	        }
+	    },
+	    updateScrollValues: function () {
+	        var content, direction;
+	        content = this.content[0];
+	        this.maxScrollTop = content.scrollHeight - content.clientHeight;
+	        this.prevScrollTop = this.contentScrollTop || 0;
+	        this.contentScrollTop = content.scrollTop;
+	        direction = this.contentScrollTop > this.previousPosition ? "down" :
+	                this.contentScrollTop < this.previousPosition ? "up" : "same";
+	        this.previousPosition = this.contentScrollTop;
+	        if (direction !== "same") {
+	            this.onScrolling.call(this._element, this, {
+	                position: this.contentScrollTop,
+	                maximum: this.maxScrollTop,
+	                direction: direction
+	            })
+	        }
+	        if (!this.iOSNativeScrolling) {
+	            this.maxSliderTop = this.paneHeight - this.sliderHeight;
+	            this.sliderTop = this.maxScrollTop === 0 ? 0 :
+	                    this.contentScrollTop * this.maxSliderTop / this.maxScrollTop;
+	        }
+	    },
+	    preventScrolling: function (e, direction) {
+	        if (!this.isActive) {
+	            return;
+	        }
+	        if (direction === "down" && e.wheelDelta > 0 || direction === "up" && e.wheelDelta < 0) {
+	            e.preventDefault()
+	        }
+	    },
+	    scroll: function () {
+	        if (!this.isActive) {
+	            return;
+	        }
+	        this.sliderY = Math.max(0, this.sliderY);
+	        this.sliderY = Math.min(this.maxSliderTop, this.sliderY);
+	        this.content.scrollTop(this.maxScrollTop * this.sliderY / this.maxSliderTop);
+	        if (!this.iOSNativeScrolling) {
+	            this.updateScrollValues();
+	            this.setOnScrollStyles();
+	        }
+	    },
+	    stop: function () {
+	        if (cAF && this.scrollRAF) {
+	            cAF(this.scrollRAF);
+	            this.scrollRAF = null;
+	        }
+	        this.stopped = true;
+	        if (!this.iOSNativeScrolling) {
+	            this.pane[0].style.display = "none"
+	        }
+	        return this;
+	    },
+	    nativeScrolling: function () {
+	        this.content[0].style.WebkitOverflowScrolling = 'touch'
+	        this.iOSNativeScrolling = true
+	        this.isActive = true
+	    },
+	    generate: function () {
+	        var cssRule
+	        if (BROWSER_SCROLLBAR_WIDTH === 0 && isFFWithBuggyScrollbar()) {
+	            var currentPadding = parseFloat(this.content.css('padding-right')) || 0
+	            cssRule = {
+	                right: -14,
+	                paddingRight: +currentPadding + 14
+	            }
+	        } else if (BROWSER_SCROLLBAR_WIDTH) {
+	            cssRule = {
+	                right: -BROWSER_SCROLLBAR_WIDTH
+	            }
+	            avalon(this._element).addClass("has-scrollbar")
+	        }
+	        if (cssRule) {
+	            this.content.css(cssRule)
+	        }
+	    },
+	    restore: function () {
+	        this.stopped = false;
+	        if (!this.iOSNativeScrolling) {
+	            this.pane[0].style.display = ""
+	        }
+	    },
+	    onSliderMouseDown: function (e) {
+	        this.isBeingDragged = true;
+	        this.offsetY = e.pageY - avalon(this.slider).offset().top
+	        if (this.slider !== e.target) {
+	            this.offsetY = 0;
+	        }
+	        this.pane.addClass("active")
+	        activeVm = this
+	    },
+	    onPaneMouseDown: function (e) {
+	        this.sliderY = (e.offsetY || e.layerY) - (this.sliderHeight * 0.5)
+	        this.scroll()
+	        this.onSliderMouseDown(e)
+	    },
+	    onPaneWeel: function (e) {
+	        this.sliderY += (e.wheelDelta > 0 ? 1 : -1)
+	        this.scroll()
+	    },
+	    onContentScroll: function (e) {
+	        this.updateScrollValues()
+	        if (this.isBeingDragged) {
+	            return;
+	        }
+	        if (!this.iOSNativeScrolling) {
+	            this.sliderY = this.sliderTop
+	            this.setOnScrollStyles();
+	        }
+	        if (e == null) {
+	            return;
+	        }
+	        if (this.contentScrollTop >= this.maxScrollTop) {
+	            if (this.preventPageScrolling) {
+	                this.preventScrolling(e, "down");
+	            }
+	            if (this.prevScrollTop !== this.maxScrollTop) {
+	                this.onScrollEnd.call(this._element, this)
+	            }
+	        } else if (this.contentScrollTop === 0) {
+	            if (this.preventPageScrolling) {
+	                this.preventScrolling(e, "up");
+	            }
+	            if (this.prevScrollTop !== 0) {
+	                this.onScrollTop.call(this._element, this)
+	            }
+	        }
+	    },
+	    onMouseUp: function () {// 绑到全局
+	        this.isBeingDragged = false
+	        this.pane.removeClass("active")
+	        activeVm = null
+	    },
+	    onMouseMove: function (e) {// 绑到全局
+	        this.sliderY = e.pageY - avalon(this._element).offset().top -
+	                this.paneTop - (this.offsetY || this.sliderHeight * 0.5)
+	        this.scroll()
+	        if (this.contentScrollTop >= this.maxScrollTop &&
+	                this.prevScrollTop !== this.maxScrollTop) {
+	            this.onScrollEnd.call(this._element, this)
+	        } else if (this.contentScrollTop === 0 && this.prevScrollTop !== 0) {
+	            this.onScrollTop.call(this._element, this)
+	        }
+	    },
+	    onMouseEnter: function (e) {
+	        if (!this.isBeingDragged) {
+	            return
+	        }
+	        if ((e.buttons || e.which) !== 1) {
+	            this.onMouseUp.call(this, arguments)
+	        }
 	    }
 	})
 
-	function toggleRadios(element, vm, hasActive) {
-	    var parent = element.parentNode
-	    while (parent && parent.nodeType === 1) {
-	        if (parent.getAttribute("data-toggle") === "buttons") {
-	            if (!hasActive)
-	                vm.active = !vm.active
-	            var input = element.getElementsByTagName("input")[0]
-	            if (input) {
-	                if (input.type === 'radio') {
-	                    var all = parent.getElementsByTagName("ms:button")
-	                    for (var i = 0, el; el = all[i++]; ) {
-	                        if (el["ms-button-vm"] && el !== element) {
-	                            el["ms-button-vm"].active = false
-	                        }
-	                    }
+	function delegate(event, callback) {
+	    var target = event.target
+	    while (target && target.nodeType === 1) {
+	        var match = (target.className.match(/nano\-(slider|content|pane)/) || [])[1]
+	        if (match) {
+	            var el = target
+	            while (target && target.nodeType === 1) {
+	                var vm = target["ms-scrollbar-vm"]
+	                if (vm) {
+	                    callback(match, el, vm)
+	                    break
 	                }
 	            }
 	        }
-	        parent = parent.parentNode
+	        target = target.parentNode
 	    }
 	}
-	function delegate(event, other) {
-	    var button = event.target
-	    while (button && button.nodeType === 1) {
-	        var vm = button["ms-button-vm"]
-	        if (vm) {
-	            if (other) {
-	                other(button)
-	            } else {
-	                event.preventDefault()
-	                var hasActive = false
-	                if (button.getAttribute("data-toggle") === "button") {
-	                    vm.active = !vm.active
-	                    hasActive = true
-	                }
-	                toggleRadios(button, vm, hasActive)
-	            }
-	            break
+
+	avalon.ready(function () {
+	   
+	    var body = document.body
+
+
+	    avalon.bind(document, "mousemove", function (event) {
+	        if (activeVm) {
+	            avalon.onMouseMove(event)
 	        }
-	        button = button.parentNode
-	    }
-	}
-	avalon(document).bind("click", delegate)
+	    })
+	    avalon.bind(document, "mouseup", function (event) {
+	        if (activeVm) {
+	            activeVm.onMouseUp(event)
+	        }
+	    })
 
-	avalon(document).bind("focusin", function (event) {
-	    delegate(event, function (button) {
-	        avalon(button).addClass("focus")
+	    avalon.bind(window, "resize", function () {
+	        for (var i = 0, vm; vm = allVm[i++]; ) {
+	            if (!vm.disableResize) {
+	                vm.onReset()
+	            }
+	        }
+	    })
+
+	    avalon.bind(body, "mouseenter", function (event) {
+	        if (activeVm) {
+	            activeVm.onMouseEnter(event)
+	        }
 	    })
 	})
-
-	avalon(document).bind("focusout", function (event) {
-	    delegate(event, function (button) {
-	        avalon(button).removeClass("focus")
-	    })
-	})
-
 
 
 	module.exports = avalon
-	// 文档 http://v4-alpha.getbootstrap.com/components/buttons/
-	// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
+
+
+
+
+
+
 
 /***/ },
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* 
-	 * 
-	 *检测对focusin/focusout的支持,不支持进行修复
-	 *
-	 *http://www.cnblogs.com/snandy/archive/2011/07/19/2110393.html
-	 */
-	var avalon = __webpack_require__(1)
-	function supportEvent(eventName, element) {
-	    var isSupported;
-	    eventName = 'on' + eventName
-	    isSupported = eventName in element
-
-	    if (!isSupported && element.setAttribute) {
-	        element.setAttribute(eventName, '')
-	        isSupported = typeof element[eventName] === 'function'
-	        if (element[eventName] !== void 0) {
-	            element[eventName] = void 0
-	        }
-	        element.removeAttribute(eventName)
-	    }
-	    return isSupported
-	}
-	var supportFocusin = !!(document.documentElement.uniqueID || window.VBArray || window.opera || window.chrome)
-	if (!supportFocusin) {
-	    var a = document.createElement('a') 
-	    a.href = "#"
-	    supportFocusin = supportEvent("focusin", a)
-	}
-	if (!supportFocusin) {
-	    avalon.log("当前浏览器不支持focusin")
-	    avalon.each({
-	        focusin: "focus",
-	        focusout: "blur"
-	    }, function (origType, fixType) {
-	        avalon.eventHooks[origType] = {
-	            type: fixType,
-	            phase: true
-	        }
-	    })
-	}
-
-	module.exports = avalon
-
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var avalon = __webpack_require__(1)
-	var dropdowns = []
-	var backdrops = []
-	var ClassName = {
-	    BACKDROP: 'dropdown-backdrop',
-	    DISABLED: 'disabled',
-	    OPEN: 'open'
-	}
-	avalon.component("ms:dropdown", {
-	    $slot: "content",
-	    content: "",
-	    $template: "{{content|html}}",
-	    onHide: avalon.noop,
-	    onHidden: avalon.noop,
-	    onShow: avalon.noop,
-	    onShown: avalon.noop,
-	    onInit: avalon.noop,
-	    $skipArray: ["_trigger", "_element"],
-	    open: false,
-	    _trigger: {},
-	    _element: {},
-	    $dispose: function (vm, element) {
-	        vm._element = vm._trigger = null
-	        avalon.Array.remove(dropdowns, vm)
-	        element["ms-dropdown-vm"] = void 0
-	        element.innerHTML = ""
-	    },
-	    
-	    $ready: function (vm, element) {
-	        var trigger = getPrevElement(element)
-	        if (!trigger) {
-	            throw "<ms:dropdown>元素前面必须存在元素节点"
-	        }
-	        var parent = element.parentNode
-
-	        avalon(parent).addClass("dropdown")
-
-	        avalon(trigger).addClass("toggle-dropdown").
-	                attr("data-toggle", "dropdown")
-	        vm._trigger = trigger
-	        avalon(element).addClass("dropdown-menu").
-	                attr("role", "menu")
-
-
-	        element["ms-dropdown-vm"] = vm
-
-	        vm._element = element
-	        if (vm.menuRight) {
-	            avalon(element).addClass("dropdown-menu-right")
-	        }
-
-	        normailizeMenu(element.childNodes)
-
-
-	        function switchOpen(a) {
-	            avalon(parent).toggleClass(ClassName.OPEN, a)
-
-	            trigger.setAttribute("aria-expanded", a)
-	            if (a) {
-	                parent.setAttribute(ClassName.OPEN, true)
-	            } else {
-	                parent.removeAttribute(ClassName.OPEN)
-	            }
-	        }
-
-	        avalon.Array.ensure(dropdowns, vm)
-	        
-	        if (avalon(parent).hasClass(ClassName.OPEN)) {
-	            vm.open = true
-	        }
-	        
-	        switchOpen(vm.open)
-
-	        vm.$watch(ClassName.OPEN, switchOpen)
-	        vm.onInit(vm)
-
-	    },
-	    keydownHandler: function (event) {
-
-	        // this可能为trigger或 menu
-	        if (!/(38|40|27|32)/.test(event.which) || /input|textarea/i.test(event.target.tagName)) {
-	            return
-	        }
-
-	        event.preventDefault()
-	        event.stopPropagation()
-
-	        if (this.disabled || avalon(this).hasClass(ClassName.DISABLED)) {
-	            return
-	        }
-	        var menu = this
-	        if (avalon(this).hasClass("toggle-dropdown")) {
-	            menu = getNextElement(menu)
-	            if (!menu)
-	                return
-	        }
-
-	        var vm = menu["ms-dropdown-vm"]
-	        var isActive = vm.open
-
-	        if (!isActive && event.which !== 27 || isActive && event.which === 27) {
-	            if (event.which === 27) {
-	                var trigger = vm._trigger
-	                avalon.fireDom(trigger, "focus")
-	            }
-	            avalon.fireDom(this, "click")
-	            return
-	        }
-	        var children = menu.children, items = []
-	        for (var i = 0, el; el = children[i++]; ) {
-	            if ((el.offsetWidth || el.offsetHeight) &&
-	                    !el.disabled &&
-	                    /\bdropdown\-item\b/.test(el.className) &&
-	                    !/\disabled\b/.test(el.className)
-	                    ) {
-	                items.push(el)
-	            }
-	        }
-
-	        if (!items.length) {
-	            return
-	        }
-
-	        var index = items.indexOf(event.target)
-	        if (!~index) {
-	            index = 0
-	        }
-	        if (event.which === 38) {
-	            // up
-	            index--;
-	            if (index === -1) {
-	                index = items.length - 1
-	            }
-	        }
-
-	        if (event.which === 40) {
-	            // down
-	            index++
-	            if (index === items.length) {
-	                index = 0
-	            }
-	        }
-
-	        items[index].focus()
-	    },
-	    toggle: function () {
-	        //this 为 trigger
-	        if (this.disabled || avalon(this).hasClass(ClassName.DISABLED)) {
-	            return false
-	        }
-
-	        var menu = getNextElement(this)
-	       
-	        if (!menu)
-	            return
-	        var vm = menu["ms-dropdown-vm"]
-	        var isActive = vm.open
-
-	        avalon.components["ms:dropdown"]._clearMenus(0)
-	        if (isActive) {
-	            return false
-	        }
-
-	        if ('ontouchstart' in document.documentElement) {
-	            // if mobile we use a backdrop because click events don't delegate
-	            var backdrop = document.createElement('div')
-	            backdrop.className = ClassName.BACKDROP
-	            this.parentNode.insertBefore(backdrop, this)
-	            avalon(backdrop).bind('click', avalon.components["ms:dropdown"]._clearMenus)
-	            backdrops.push(backdrop)
-	        }
-	        var ret = vm.onShow.call(menu, vm)
-	        if (ret === false) {
-	            return false
-	        }
-	        this.focus()
-	        vm.open = true
-	        vm.onShown.call(menu, vm)
-
-	    },
-	    _clearMenus: function (event) {//关闭页面上所有菜单
-	        if (event && event.which === 3) {//右键
-	            return;
-	        }
-	        if (backdrops.length) {
-	            var backdrop = backdrops[0]
-	            backdrop.parentNode.removeChild(backdrop);
-	        }
-
-	        for (var i = 0; i < dropdowns.length; i++) {
-	            var vm = dropdowns[i]
-	            var menu = vm._element
-
-	            if (!vm.open) {
-	                continue
-	            }
-	            if (event && event.type === 'click' &&
-	                    avalon.contains(menu.parentNode, event.target)) {
-	                continue
-	            }
-	            var ret = vm.onHide.call(menu, vm)
-
-	            if (ret === false) {
-	                continue
-	            }
-
-	            vm.open = false
-
-	            vm.onHidden.call(menu, vm)
-
-	        }
-	    }
-	})
-	var rdropdown = /\bdropdown\-(item|divider|header)\b/
-	function normailizeMenu(elems) {
-	    for (var i = 0, el; el = elems[i++]; ) {
-	        if (el.nodeType === 1) {
-	            if (!rdropdown.test(el.className)) {
-	                switch (el.nodeName.toLowerCase()) {
-	                    case "button":
-	                    case "a":
-	                        avalon(el).addClass("dropdown-item")
-	                        break
-	                    case "div":
-	                        avalon(el).addClass("dropdown-divider")
-	                        break
-	                    case "h1":
-	                    case "h2":
-	                    case "h3":
-	                    case "h4":
-	                    case "h5":
-	                    case "h6":
-	                        avalon(el).addClass("dropdown-header")
-	                        break
-	                }
-	            }
-	        }
-	    }
-	}
-	function getNextElement(node) {
-	    node = node.nextSibling
-	    while (node.nodeType !== 1) {
-	        node = node.nextSibling
-	    }
-	    return node
-	}
-
-	function getPrevElement(node) {
-	    node = node.previousSibling
-	    while (node.nodeType !== 1) {
-	        node = node.previousSibling
-	    }
-	    return node
-	}
-
-	function getDropDownParent(target) {
-	    var parent = target.parentNode
-	    if (avalon(parent).hasClass("dropdown"))
-	        return parent
-	    return null
-	}
-
-	function delegate(event) {
-	    var target = event.target
-	    var eventType = event.type
-	    while (target && target.nodeType === 1) {
-	        var isTigger = target.getAttribute("data-toggle") === "dropdown"
-	        var isMenu = /^(menu|listbox)$/.test(target.getAttribute("role"))
-	        if (eventType === "keydown" && (isTigger || isMenu)) {
-	            avalon.components["ms:dropdown"].keydownHandler.call(target, event)
-	            break
-	        }
-	        if (eventType === "click" && isTigger) {
-	            avalon.components["ms:dropdown"].toggle.call(target, event)
-	            break
-	        }
-	        target = target.parentNode
-	    }
-
-	}
-	avalon(document).bind("click", delegate)
-	avalon(document).bind("keydown", delegate)
-	avalon(document).bind("click", avalon.components["ms:dropdown"]._clearMenus)
-
-
-
-	module.exports = avalon
-	// 文档 http://v4-alpha.getbootstrap.com/components/buttons/
-	// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var avalon = __webpack_require__(1)
-	__webpack_require__(6);
-
-
-	avalon.component("ms:btngroup", {
-	    $slot: "content",
-	    content: "",
-	    $template: "{{content|html}}",
-	    size: "", //lg sm xs
-	    label: "",
-	    vertical: false,
-	    $dispose: function (vm, element) {
-	        element.innerHTML = ""
-	    },
-	    $ready: function (vm, element) {
-	        var btn = avalon(element)
-	        btn.attr("role", "group")
-	        if (vm.label)
-	            btn.attr("aria-label", vm.label)
-	        if(vm.vertical){
-	             btn.addClass("btn-group-vertical")
-	        }else{
-	             btn.addClass("btn-group")
-	        }
-	       
-	        if (vm.size) {
-	            btn.addClass("btn-group-" + vm.size)
-	        }
-	    }
-	})
-
-
-	module.exports = avalon
-	// 文档 http://v4-alpha.getbootstrap.com/components/buttons/
-	// 代码 https://github.com/twbs/bootstrap/blob/v4-dev/dist/js/umd/button.js
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(7);
+	var content = __webpack_require__(4);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(9)(content, {});
+	var update = __webpack_require__(6)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../../../usr/local/lib/node_modules/css-loader/index.js!./../../../../../usr/local/lib/node_modules/sass-loader/index.js!./btngroup.scss", function() {
-				var newContent = require("!!./../../../../../usr/local/lib/node_modules/css-loader/index.js!./../../../../../usr/local/lib/node_modules/sass-loader/index.js!./btngroup.scss");
+			module.hot.accept("!!./../../../../../usr/local/lib/node_modules/css-loader/index.js!./../../../../../usr/local/lib/node_modules/sass-loader/index.js!./scrollbar.scss", function() {
+				var newContent = require("!!./../../../../../usr/local/lib/node_modules/css-loader/index.js!./../../../../../usr/local/lib/node_modules/sass-loader/index.js!./scrollbar.scss");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -6452,21 +6439,21 @@
 	}
 
 /***/ },
-/* 7 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(8)();
+	exports = module.exports = __webpack_require__(5)();
 	// imports
 
 
 	// module
-	exports.push([module.id, ".btn-group,\n.btn-group-vertical {\n  position: relative;\n  display: inline-block;\n  vertical-align: middle; }\n  .btn-group > .btn,\n  .btn-group-vertical > .btn {\n    position: relative;\n    float: left; }\n    .btn-group > .btn:focus, .btn-group > .btn:active, .btn-group > .btn.active,\n    .btn-group-vertical > .btn:focus,\n    .btn-group-vertical > .btn:active,\n    .btn-group-vertical > .btn.active {\n      z-index: 2; }\n    .btn-group > .btn:hover,\n    .btn-group-vertical > .btn:hover {\n      z-index: 2; }\n\n.btn-group .btn + .btn,\n.btn-group .btn + .btn-group,\n.btn-group .btn-group + .btn,\n.btn-group .btn-group + .btn-group {\n  margin-left: -1px; }\n\n.btn-toolbar {\n  margin-left: -5px; }\n  .btn-toolbar:before, .btn-toolbar:after {\n    content: \" \";\n    display: table; }\n  .btn-toolbar:after {\n    clear: both; }\n  .btn-toolbar .btn-group,\n  .btn-toolbar .input-group {\n    float: left; }\n  .btn-toolbar > .btn,\n  .btn-toolbar > .btn-group,\n  .btn-toolbar > .input-group {\n    margin-left: 5px; }\n\n.btn-group > .btn:not(:first-child):not(:last-child):not(.dropdown-toggle) {\n  border-radius: 0; }\n\n.btn-group > .btn:first-child {\n  margin-left: 0; }\n  .btn-group > .btn:first-child:not(:last-child):not(.dropdown-toggle) {\n    border-bottom-right-radius: 0;\n    border-top-right-radius: 0; }\n\n.btn-group > .btn:last-child:not(:first-child),\n.btn-group > .dropdown-toggle:not(:first-child) {\n  border-bottom-left-radius: 0;\n  border-top-left-radius: 0; }\n\n.btn-group > .btn-group {\n  float: left; }\n\n.btn-group > .btn-group:not(:first-child):not(:last-child) > .btn {\n  border-radius: 0; }\n\n.btn-group > .btn-group:first-child:not(:last-child) > .btn:last-child,\n.btn-group > .btn-group:first-child:not(:last-child) > .dropdown-toggle {\n  border-bottom-right-radius: 0;\n  border-top-right-radius: 0; }\n\n.btn-group > .btn-group:last-child:not(:first-child) > .btn:first-child {\n  border-bottom-left-radius: 0;\n  border-top-left-radius: 0; }\n\n.btn-group .dropdown-toggle:active,\n.btn-group.open .dropdown-toggle {\n  outline: 0; }\n\n.btn-group > .btn + .dropdown-toggle {\n  padding-right: 8px;\n  padding-left: 8px; }\n\n.btn-group > .btn-lg + .dropdown-toggle, .btn-group-lg.btn-group > .btn + .dropdown-toggle {\n  padding-right: 12px;\n  padding-left: 12px; }\n\n.btn .caret {\n  margin-left: 0; }\n\n.btn-lg .caret, .btn-group-lg > .btn .caret {\n  border-width: 0.3em 0.3em 0;\n  border-bottom-width: 0; }\n\n.dropup .btn-lg .caret, .dropup .btn-group-lg > .btn .caret {\n  border-width: 0 0.3em 0.3em; }\n\n.btn-group-vertical > .btn,\n.btn-group-vertical > .btn-group,\n.btn-group-vertical > .btn-group > .btn {\n  display: block;\n  float: none;\n  width: 100%;\n  max-width: 100%; }\n\n.btn-group-vertical > .btn-group:before, .btn-group-vertical > .btn-group:after {\n  content: \" \";\n  display: table; }\n\n.btn-group-vertical > .btn-group:after {\n  clear: both; }\n\n.btn-group-vertical > .btn-group > .btn {\n  float: none; }\n\n.btn-group-vertical > .btn + .btn,\n.btn-group-vertical > .btn + .btn-group,\n.btn-group-vertical > .btn-group + .btn,\n.btn-group-vertical > .btn-group + .btn-group {\n  margin-top: -1px;\n  margin-left: 0; }\n\n.btn-group-vertical > .btn:not(:first-child):not(:last-child) {\n  border-radius: 0; }\n\n.btn-group-vertical > .btn:first-child:not(:last-child) {\n  border-top-right-radius: 0.25rem;\n  border-bottom-right-radius: 0;\n  border-bottom-left-radius: 0; }\n\n.btn-group-vertical > .btn:last-child:not(:first-child) {\n  border-bottom-left-radius: 0.25rem;\n  border-top-right-radius: 0;\n  border-top-left-radius: 0; }\n\n.btn-group-vertical > .btn-group:not(:first-child):not(:last-child) > .btn {\n  border-radius: 0; }\n\n.btn-group-vertical > .btn-group:first-child:not(:last-child) > .btn:last-child,\n.btn-group-vertical > .btn-group:first-child:not(:last-child) > .dropdown-toggle {\n  border-bottom-right-radius: 0;\n  border-bottom-left-radius: 0; }\n\n.btn-group-vertical > .btn-group:last-child:not(:first-child) > .btn:first-child {\n  border-top-right-radius: 0;\n  border-top-left-radius: 0; }\n\n[data-toggle=\"buttons\"] > .btn input[type=\"radio\"],\n[data-toggle=\"buttons\"] > .btn input[type=\"checkbox\"],\n[data-toggle=\"buttons\"] > .btn-group > .btn input[type=\"radio\"],\n[data-toggle=\"buttons\"] > .btn-group > .btn input[type=\"checkbox\"] {\n  position: absolute;\n  clip: rect(0, 0, 0, 0);\n  pointer-events: none; }\n", ""]);
+	exports.push([module.id, "/** initial setup **/\n.nano {\n  width: 100%;\n  height: 100%;\n  position: relative;\n  overflow: hidden; }\n  .nano .nano-content {\n    position: absolute;\n    top: 0;\n    right: 0;\n    bottom: 0;\n    left: 0;\n    overflow: scroll;\n    overflow-x: hidden; }\n    .nano .nano-content:focus {\n      outline: thin dotted; }\n    .nano .nano-content::-webkit-scrollbar {\n      display: none; }\n  .nano > .nano-pane {\n    width: 10px;\n    background: rgba(0, 0, 0, 0.25);\n    position: absolute;\n    top: 0;\n    right: 0;\n    bottom: 0;\n    -webkit-transition: .2s;\n    -moz-transition: .2s;\n    -o-transition: .2s;\n    transition: .2s;\n    -webkit-border-radius: 5px;\n    -moz-border-radius: 5px;\n    border-radius: 5px;\n    visibility: hidden\\9;\n    opacity: .01; }\n    .nano > .nano-pane > .nano-slider {\n      background: #444;\n      background: rgba(0, 0, 0, 0.5);\n      position: relative;\n      margin: 0 1px;\n      -webkit-border-radius: 3px;\n      -moz-border-radius: 3px;\n      border-radius: 3px; }\n\n.has-scrollbar > .nano-content::-webkit-scrollbar {\n  display: block; }\n\n.nano:hover > .nano-pane, .nano-pane.active, .nano-pane.flashed {\n  visibility: visible\\9;\n  opacity: 0.99; }\n", ""]);
 
 	// exports
 
 
 /***/ },
-/* 8 */
+/* 5 */
 /***/ function(module, exports) {
 
 	/*
@@ -6522,7 +6509,7 @@
 
 
 /***/ },
-/* 9 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -6776,16 +6763,16 @@
 
 
 /***/ },
-/* 10 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(11);
+	var content = __webpack_require__(8);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(9)(content, {});
+	var update = __webpack_require__(6)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6802,10 +6789,10 @@
 	}
 
 /***/ },
-/* 11 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(8)();
+	exports = module.exports = __webpack_require__(5)();
 	// imports
 
 

@@ -1,0 +1,240 @@
+//
+// Flipswitch
+// --------------------------------------------------
+@import "../bootstrap/variables";
+@import "../bootstrap/mixins";
+@import "./boxsizing";
+//== Flipswitch
+//
+//##
+$gray-base:              #000;
+$gray-darker:            lighten($gray-base, 13.5%); // #222
+$gray-dark:              lighten($gray-base, 20%);   // #333
+$gray:                   lighten($gray-base, 33.5%); // #555
+$gray-light:             lighten($gray-base, 46.7%); // #777
+$gray-lighter:           lighten($gray-base, 93.5%); // #eee
+
+$brand-primary:         darken(#428bca, 6.5%); // #337ab7
+$brand-success:         #5cb85c;
+$brand-info:            #5bc0de;
+$brand-warning:         #f0ad4e;
+$brand-danger:          #d9534f;
+
+
+$uiname: "flipswitch";
+
+@mixin transition($args...) {
+    -webkit-transition: $args;
+    -moz-transition: $args;
+    -ms-transition: $args;
+    -o-transition: $args;
+    transition: $args;
+}
+@mixin transition($args...) {
+    -webkit-transition: $args;
+    -moz-transition: $args;
+    -ms-transition: $args;
+    -o-transition: $args;
+    transition: $args;
+}
+@mixin transform($args...) {
+    -webkit-transform: $args;
+    -moz-transform: $args;
+    -ms-transform: $args;
+    transform: $args;
+}
+
+@mixin user-select($args...){
+    -webkit-user-select: $args;
+    -moz-user-select: $args;
+    -ms-user-select: $args;
+    user-select: $args;
+}
+
+@mixin opacity($opacity) {
+  opacity: $opacity;
+  $opacity-ie: $opacity * 100;
+  filter: alpha(opacity=$opacity-ie); 
+}
+
+@mixin box-shadow($shadows...) {
+  -moz-box-shadow: $shadows;
+  -webkit-box-shadow: $shadows;
+  box-shadow: $shadows;
+}
+// Base class
+.#{$uiname} {
+    display: inline-block;
+    direction: ltr;
+    cursor: pointer;
+    border-radius: $btn-border-radius;
+    border: 1px solid;
+    border-color: $btn-primary-border;
+    position: relative;
+    text-align: left;
+    overflow: hidden;
+    line-height: 8px;
+    z-index: 0;
+    box-sizing: border-box;
+    @include user-select(none);
+    vertical-align: middle;
+    @include transition(border-color ease-in-out .15s, box-shadow ease-in-out .15s);
+    
+    .#{$uiname}-container{
+        display: inline-block;
+        top: 0;
+        border-radius: $border-radius;
+        @include transform(translate3d(0, 0, 0));
+    }
+    
+    .#{$uiname}-handle-on,
+    .#{$uiname}-handle-off,
+    .#{$uiname}-label {
+        @include box-sizing(border-box);
+        cursor: pointer;
+        display: inline-block !important;
+        height:  100%;
+        padding: $padding-base-vertical $padding-base-horizontal;
+        font-size: $font-size-base;
+        line-height: $line-height-computed;
+    }
+
+
+    .#{$uiname}-handle-on,
+    .#{$uiname}-handle-off {
+        text-align: center;
+        z-index: 1;
+
+        &.#{$uiname}-primary {
+            color: #fff;
+            background: $btn-primary-bg;
+        }
+
+        &.#{$uiname}-info {
+            color: #fff;
+            background: $btn-info-bg;
+        }
+
+        &.#{$uiname}-success {
+            color: #fff;
+            background: $btn-success-bg;
+        }
+
+        &.#{$uiname}-warning {
+            background: $btn-warning-bg;
+            color: #fff;
+        }
+
+        &.#{$uiname}-danger {
+            color: #fff;
+            background: $btn-danger-bg;
+        }
+
+        &.#{$uiname}-default {
+            color: #000;
+            background: $gray-lighter;
+        }
+    }
+
+
+    .#{$uiname}-label {
+        text-align: center;
+        margin-top: -1px;
+        margin-bottom: -1px;
+        z-index: 100;
+        color: $btn-default-color;
+        background: $btn-default-bg;
+    }
+
+    .#{$uiname}-handle-on {
+        @include border-left-radius($border-radius-base - 1);
+    }
+
+    .#{$uiname}-handle-off {
+        @include border-right-radius($border-radius-base - 1);
+    }
+    
+    
+  input[type='radio'],
+  input[type='checkbox'] {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    margin: 0;
+    z-index: -1;
+    @include opacity(0);
+  }
+  
+  &.#{$uiname}-xs {
+
+    .#{$uiname}-handle-on,
+    .#{$uiname}-handle-off,
+    .#{$uiname}-label {
+      padding: $padding-xs-vertical $padding-xs-horizontal;
+      font-size: $font-size-xs;
+      line-height: $line-height-computed;//$line-height-xs;
+    }
+  }  
+
+  &.#{$uiname}-sm {
+
+    .#{$uiname}-handle-on,
+    .#{$uiname}-handle-off,
+    .#{$uiname}-label {
+      padding: $padding-sm-vertical $padding-sm-horizontal;
+      font-size: $font-size-sm;
+      line-height:$line-height-computed; //$line-height-sm;
+    }
+  }
+
+  &.#{$uiname}-lg {
+
+    .#{$uiname}-handle-on,
+    .#{$uiname}-handle-off,
+    .#{$uiname}-label {
+      padding: $padding-lg-vertical $padding-lg-horizontal;
+      font-size: $font-size-lg;
+      line-height:$line-height-computed;
+    }
+  }
+
+  &.#{$uiname}-disabled,
+  &.#{$uiname}-readonly,
+  &.#{$uiname}-indeterminate {
+    cursor: default !important;
+
+    .#{$uiname}-handle-on,
+    .#{$uiname}-handle-off,
+    .#{$uiname}-label {
+      @include opacity(.5);
+      cursor: default !important;
+    }
+  }
+  
+  &.#{$uiname}-animate {
+
+    .#{$uiname}-container {
+      @include transition(margin-left .5s);
+    }
+  }
+  
+   &.#{$uiname}-focused {
+    $color-rgba: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6);
+    border-color: $input-border-focus;
+    outline: 0;
+    @include box-shadow(inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px $color-rgba);
+  }
+
+  &.#{$uiname}-on{
+    .#{$uiname}-label {
+      @include border-right-radius($border-radius-base - 1);
+    }
+  }
+
+  &.#{$uiname}-off{
+    .#{$uiname}-label {
+      @include border-left-radius($border-radius-base - 1);
+    }
+  }
+
+}

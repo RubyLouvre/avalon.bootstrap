@@ -1,4 +1,6 @@
 var avalon = require("avalon")
+require("!style!css!sass!./btngroup.scss");
+
 
 avalon.component("ms:btngroup", {
     $slot: "content",
