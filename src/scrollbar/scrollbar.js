@@ -4,7 +4,7 @@
 var avalon = require("avalon")
 require("!style!css!sass!./scrollbar.scss");
 
-var isIE7 = document.documentMode === 7 || /msie 7./i.test(window.navigator.appVersion)
+var isIE7 = document.querySelectorAll && window.VBArray
 var transform = avalon.cssName('transform')
 var hasTransform = typeof transform === "string"
 var activeVm = null
@@ -45,9 +45,6 @@ avalon.component("ms:scrollbar", {
     preventPageScrolling: false,
     disableResize: false,
     alwaysVisible: false,
-    flashDelay: 1500,
-    sliderMinHeight: 20,
-    sliderMaxHeight: null,
     $slot: "__content",
     $replace: true,
     $template: '<div class="nano">' +
@@ -61,18 +58,34 @@ avalon.component("ms:scrollbar", {
     sliderY: 0,
     isActive: true,
     scrollRAF: 0,
-    contentScrollTop: 0,
     previousPosition: 0,
     prevScrollTop: NaN,
     maxSliderTop: 0,
     contentHeight: 0,
+    contentScrollTop: 0,
     paneHeight: 0,
     paneOuterHeight: 0,
     paneTop: 0,
     stopped: 0,
+    sliderMinHeight: 20,
+    sliderMaxHeight: null,
     onScrolling: avalon.noop, //需要用户重写
     onScrollEnd: avalon.noop, //需要用户重写
     onScrollTop: avalon.noop, //需要用户重写
+    $skipArray: [
+        "contentScrollTop",
+        "scrollRAF",
+        "isActive",
+        "paneHeight",
+        "paneOuterHeight",
+        "paneTop",
+        "sliderHeight",
+        "sliderY",
+        "isActive",
+        "scrollRAF",
+        "previousPosition",
+        "prevScrollTop"
+    ],
     $dispose: function (vm, element) {
         element["ms-scrollar-vm"] = null
         avalon.Array.remove(allVm, vm)
@@ -81,9 +94,7 @@ avalon.component("ms:scrollbar", {
         if (!BROWSER_SCROLLBAR_WIDTH) {
             BROWSER_SCROLLBAR_WIDTH = getBrowserScrollbarWidth()
         }
-        //  avalon.scan(element, vm)
         vm._element = element
-        console.log(vm.__content)
         element["vm-scrollbar-vm"] = vm
         avalon.Array.ensure(allVm, vm)
         var children = element.children
@@ -101,30 +112,30 @@ avalon.component("ms:scrollbar", {
         } else {
             vm.generate()
         }
-        function switchPosition(value) {
-            if (vm.isActive) {
-                if (isFinite(value)) {
-                    value = +value
-                    if (value < 0) {
-                        vm.scrollTop(vm.contentHeight - vm.content.height() - value)
-                    } else {
-                        vm.scrollTop(value)
-                    }
-
-                } else if (value.charAt(0) === "#") {
-                    var el = document.getElementById(value.slice(1))
-                    if (el && avalon.contains(element, el)) {
-                        vm.scrollTop(el.offsetTop)
-                    }
-                } else if (value === "top") {
+        function switchPosition(value, _) {
+            vm.isActive = true
+            if (isFinite(value)) {
+                value = +value
+                if (value < 0) {
+                    vm.scrollTop(vm.contentHeight - vm.content.height() - value)
+                } else {
                     vm.scrollTop(value)
-                } else if (value === "bottom") {
-                    vm.scrollTop(vm.contentHeight - vm.content.height())
                 }
+
+            } else if (value.charAt(0) === "#") {
+                var el = document.getElementById(value.slice(1))
+                if (el && avalon.contains(element, el)) {
+                    vm.scrollTop(el.offsetTop)
+                }
+            } else if (value === "top") {
+                vm.scrollTop(value)
+            } else if (value === "bottom") {
+                vm.scrollTop(vm.contentHeight - vm.content.height())
             }
 
-        }
 
+        }
+        vm.reset()
         vm.$watch("position", switchPosition)
 
         switchPosition(vm.position)
@@ -151,15 +162,14 @@ avalon.component("ms:scrollbar", {
             })
         })
 
-        vm.reset()
+
     },
     scrollTop: function (offsetY) {
         if (!this.isActive) {
-            return;
+            return
         }
         this.content.scrollTop(+offsetY)
-        this.onPaneWheel()
-
+        this.onContentScroll()
         this.stop().restore();
         return this;
     },
@@ -381,6 +391,7 @@ avalon.component("ms:scrollbar", {
             this.sliderY = this.sliderTop
             this.setOnScrollStyles();
         }
+
         if (e == null) {
             return;
         }
@@ -426,26 +437,9 @@ avalon.component("ms:scrollbar", {
     }
 })
 
-//function delegate(event, callback) {
-//    var target = event.target
-//    while (target && target.nodeType === 1) {
-//        var match = (target.className.match(/nano\-(slider|content|pane)/) || [])[1]
-//        if (match) {
-//            var el = target
-//            while (target && target.nodeType === 1) {
-//                var vm = target["ms-scrollbar-vm"]
-//                if (vm) {
-//                    callback(match, el, vm)
-//                    break
-//                }
-//            }
-//        }
-//        target = target.parentNode
-//    }
-//}
+
 
 avalon.ready(function () {
-
     var body = document.body
 
 

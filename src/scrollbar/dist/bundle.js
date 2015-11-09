@@ -52,7 +52,16 @@
 
 	avalon.define({
 	    $id: "test",
-	    ee: "111"
+	    ee: "111",
+	    onScrolling: function () {
+	        avalon.log("正在滚动")
+	    },
+	    onScrollTop: function () {
+	        avalon.log("滚动到顶部")
+	    },
+	    onScrollEnd: function () {
+	        avalon.log("滚动结束")
+	    }
 	})
 
 /***/ },
@@ -66,7 +75,7 @@
 	 http://weibo.com/jslouvre/
 	 
 	 Released under the MIT license
-	 avalon.shim.js 1.5.5 built in 2015.11.4
+	 avalon.shim.js 1.5.5 built in 2015.11.9
 	 support IE6+ and other browsers
 	 ==================================================*/
 	(function(global, factory) {
@@ -3082,6 +3091,26 @@
 	    return a.priority - b.priority
 	}
 
+
+	var rnoCollect = /^(ms-\S+|data-\S+|on[a-z]+|id|style|class)$/
+	var ronattr = /^on\-[\w-]+$/
+	function getOptionsFromTag(elem, vmodels) {
+	    var attributes = elem.attributes
+	    var ret = {}
+	    for (var i = 0, attr; attr = attributes[i++]; ) {
+	        var name = attr.name
+	        if (attr.specified && !rnoCollect.test(name)) {
+	            var camelizeName = camelize(attr.name)
+	            if (/^on\-[\w-]+$/.test(name)) {
+	                ret[camelizeName] = getBindingCallback(elem, name, vmodels) 
+	            } else {
+	                ret[camelizeName] = parseData(attr.value)
+	            }
+	        }
+
+	    }
+	    return ret
+	}
 	function scanAttr(elem, vmodels, match) {
 	    var scanNode = true
 	    if (vmodels.length) {
@@ -3220,17 +3249,7 @@
 	    }
 	}
 
-	var rnoCollect = /^(ms-\S+|data-\S+|on[a-z]+|id|style|class|tabindex)$/
-	function getOptionsFromTag(elem) {
-	    var attributes = getAttributes ? getAttributes(elem) : elem.attributes
-	    var ret = {}
-	    for (var i = 0, attr; attr = attributes[i++]; ) {
-	        if (attr.specified && !rnoCollect.test(attr.name)) {
-	            ret[camelize(attr.name)] = parseData(attr.value)
-	        }
-	    }
-	    return ret
-	}
+
 	function scanNodeList(parent, vmodels) {
 	    var nodes = avalon.slice(parent.childNodes)
 	    scanNodeArray(nodes, vmodels)
@@ -3467,7 +3486,7 @@
 
 	                //===========收集各种配置=======
 
-	                var elemOpts = getOptionsFromTag(elem)
+	                var elemOpts = getOptionsFromTag(elem, host.vmodels)
 	                var vmOpts = getOptionsFromVM(host.vmodels, elemOpts.config || host.widget)
 	                var $id = elemOpts.$id || elemOpts.identifier || generateID(widget)
 	                delete elemOpts.config
@@ -5937,7 +5956,7 @@
 	var avalon = __webpack_require__(1)
 	__webpack_require__(3);
 
-	var isIE7 = document.documentMode === 7 || /msie 7./i.test(window.navigator.appVersion)
+	var isIE7 = document.querySelectorAll && window.VBArray
 	var transform = avalon.cssName('transform')
 	var hasTransform = typeof transform === "string"
 	var activeVm = null
@@ -5978,9 +5997,6 @@
 	    preventPageScrolling: false,
 	    disableResize: false,
 	    alwaysVisible: false,
-	    flashDelay: 1500,
-	    sliderMinHeight: 20,
-	    sliderMaxHeight: null,
 	    $slot: "__content",
 	    $replace: true,
 	    $template: '<div class="nano">' +
@@ -5994,18 +6010,34 @@
 	    sliderY: 0,
 	    isActive: true,
 	    scrollRAF: 0,
-	    contentScrollTop: 0,
 	    previousPosition: 0,
 	    prevScrollTop: NaN,
 	    maxSliderTop: 0,
 	    contentHeight: 0,
+	    contentScrollTop: 0,
 	    paneHeight: 0,
 	    paneOuterHeight: 0,
 	    paneTop: 0,
 	    stopped: 0,
+	    sliderMinHeight: 20,
+	    sliderMaxHeight: null,
 	    onScrolling: avalon.noop, //需要用户重写
 	    onScrollEnd: avalon.noop, //需要用户重写
 	    onScrollTop: avalon.noop, //需要用户重写
+	    $skipArray: [
+	        "contentScrollTop",
+	        "scrollRAF",
+	        "isActive",
+	        "paneHeight",
+	        "paneOuterHeight",
+	        "paneTop",
+	        "sliderHeight",
+	        "sliderY",
+	        "isActive",
+	        "scrollRAF",
+	        "previousPosition",
+	        "prevScrollTop"
+	    ],
 	    $dispose: function (vm, element) {
 	        element["ms-scrollar-vm"] = null
 	        avalon.Array.remove(allVm, vm)
@@ -6014,9 +6046,7 @@
 	        if (!BROWSER_SCROLLBAR_WIDTH) {
 	            BROWSER_SCROLLBAR_WIDTH = getBrowserScrollbarWidth()
 	        }
-	        //  avalon.scan(element, vm)
 	        vm._element = element
-	        console.log(vm.__content)
 	        element["vm-scrollbar-vm"] = vm
 	        avalon.Array.ensure(allVm, vm)
 	        var children = element.children
@@ -6034,30 +6064,30 @@
 	        } else {
 	            vm.generate()
 	        }
-	        function switchPosition(value) {
-	            if (vm.isActive) {
-	                if (isFinite(value)) {
-	                    value = +value
-	                    if (value < 0) {
-	                        vm.scrollTop(vm.contentHeight - vm.content.height() - value)
-	                    } else {
-	                        vm.scrollTop(value)
-	                    }
-
-	                } else if (value.charAt(0) === "#") {
-	                    var el = document.getElementById(value.slice(1))
-	                    if (el && avalon.contains(element, el)) {
-	                        vm.scrollTop(el.offsetTop)
-	                    }
-	                } else if (value === "top") {
+	        function switchPosition(value, _) {
+	            vm.isActive = true
+	            if (isFinite(value)) {
+	                value = +value
+	                if (value < 0) {
+	                    vm.scrollTop(vm.contentHeight - vm.content.height() - value)
+	                } else {
 	                    vm.scrollTop(value)
-	                } else if (value === "bottom") {
-	                    vm.scrollTop(vm.contentHeight - vm.content.height())
 	                }
+
+	            } else if (value.charAt(0) === "#") {
+	                var el = document.getElementById(value.slice(1))
+	                if (el && avalon.contains(element, el)) {
+	                    vm.scrollTop(el.offsetTop)
+	                }
+	            } else if (value === "top") {
+	                vm.scrollTop(value)
+	            } else if (value === "bottom") {
+	                vm.scrollTop(vm.contentHeight - vm.content.height())
 	            }
 
-	        }
 
+	        }
+	        vm.reset()
 	        vm.$watch("position", switchPosition)
 
 	        switchPosition(vm.position)
@@ -6084,15 +6114,14 @@
 	            })
 	        })
 
-	        vm.reset()
+
 	    },
 	    scrollTop: function (offsetY) {
 	        if (!this.isActive) {
-	            return;
+	            return
 	        }
 	        this.content.scrollTop(+offsetY)
-	        this.onPaneWheel()
-
+	        this.onContentScroll()
 	        this.stop().restore();
 	        return this;
 	    },
@@ -6314,6 +6343,7 @@
 	            this.sliderY = this.sliderTop
 	            this.setOnScrollStyles();
 	        }
+
 	        if (e == null) {
 	            return;
 	        }
@@ -6359,26 +6389,9 @@
 	    }
 	})
 
-	//function delegate(event, callback) {
-	//    var target = event.target
-	//    while (target && target.nodeType === 1) {
-	//        var match = (target.className.match(/nano\-(slider|content|pane)/) || [])[1]
-	//        if (match) {
-	//            var el = target
-	//            while (target && target.nodeType === 1) {
-	//                var vm = target["ms-scrollbar-vm"]
-	//                if (vm) {
-	//                    callback(match, el, vm)
-	//                    break
-	//                }
-	//            }
-	//        }
-	//        target = target.parentNode
-	//    }
-	//}
+
 
 	avalon.ready(function () {
-
 	    var body = document.body
 
 

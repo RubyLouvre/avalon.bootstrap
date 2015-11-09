@@ -16,22 +16,68 @@
     <xmp ms-skip>
         <ms:progress value="100" >100%</ms:progress>
     </xmp>
-    <div style="width:200px;height:100px;">
-        <ms:scrollbar>
-            TEST<br/>
-            TEST<br/>
-            TEST<br/>
-            TEST<br/>
-            TEST<br/>
-            TEST<br/>
-            TEST<br/>
-            TEST<br/>
-            TEST<br/>
-            TEST<br/>
-            TEST<br/>
-            {{ee}}
-        </ms:scrollbar>
-    </div>
+    <table>
+        <tr>
+            <td>
+                <div style="width:200px;height:100px;">
+                    <ms:scrollbar>
+                        &ms:scrollbar必须放在一个指定宽度与高度的容器里<br/>
+                        &ms:scrollbar必须放在一个指定宽度与高度的容器里<br/>
+                        &ms:scrollbar必须放在一个指定宽度与高度的容器里<br/>
+                        &ms:scrollbar必须放在一个指定宽度与高度的容器里<br/>
+                        &ms:scrollbar必须放在一个指定宽度与高度的容器里<br/>
+                    </ms:scrollbar>
+                </div>
+            </td>
+            <td>
+                <div style="width:200px;height:100px;">
+                    <ms:scrollbar position="50">
+                        <ol>
+                            <li>通过position指定滚动条位置</li>
+                            <li>通过position指定滚动条位置</li>
+                            <li>通过position指定滚动条位置</li>
+                            <li>通过position指定滚动条位置</li>
+                            <li>通过position指定滚动条位置</li>
+                            <li>通过position指定滚动条位置</li>
+                            <li>通过position指定滚动条位置</li>
+                            <li>通过position指定滚动条位置</li>
+                            <li>通过position指定滚动条位置</li>
+                        </ol>
+                    </ms:scrollbar>
+                </div> 
+            </td>
+            <td>
+                <div style="width:200px;height:100px;">
+                    <ms:scrollbar always-visible="true" 
+                                  on-scrolling="onScrolling"
+                                  on-scroll-top="onScrollTop"
+                                  on-scroll-end="onScrollEnd"
+                                  >
+                        <ol>
+                            <li>always-visible=true</li>
+                            <li>使用on-scrolling绑定事件</li>
+                            <li>使用on-scroll-top绑定事件</li>
+                            <li>使用on-scroll-end绑定事件</li>
+                            <li>always-visible=true</li>
+                            <li>使用on-scrolling绑定事件</li>
+                            <li>使用on-scroll-top绑定事件</li>
+                            <li>使用on-scroll-end绑定事件</li>
+                            <li>always-visible=true</li>
+                            <li>使用on-scrolling绑定事件</li>
+                            <li>使用on-scroll-top绑定事件</li>
+                            <li>使用on-scroll-end绑定事件</li>
+                            <li>always-visible=true</li>
+                            <li>使用on-scrolling绑定事件</li>
+                            <li>使用on-scroll-top绑定事件</li>
+                            <li>使用on-scroll-end绑定事件</li>
+                        </ol>
+
+                    </ms:scrollbar>
+                </div>
+            </td>
+        </tr>
+    </table>
+
     <table class="table table-striped table-bordered table-hover">
         <thead>
             <tr><th>名字</th><th>属性</th><th>描述</th><th>值</th><th>默认值</th></tr>
@@ -39,12 +85,12 @@
         <tbody>
             <tr><td>postion</td><td>String|Number</td><td>指定滚动条拖块位的位置, 可以top, bottom, 
                     ID(以#开头,且该元素应该在滚动条父容器的内部),数字,如果数字为负数,那么从底部定位</td><td>""</td><td>0</td></tr>
-            
+
             <tr><td>onScrolling</td><td>Function</td><td>滚动条移动时触发</td><td></td><td></td></tr>
             <tr><td>onScrollTop</td><td>Function</td><td>滚动条到达项部触发</td><td></td><td></td></tr>
             <tr><td>onScrollEnd</td><td>Function</td><td>滚动条到达底部触发</td><td></td><td></td></tr>
 
-            <tr><td>iOSNativeScrolling</td><td>Boolean</td><td>为true使用源生滚动条</td><td></td><td>false</td></tr>
+            <tr><td>iOSNativeScrolling</td><td>Boolean</td><td>如果你的设备为iOS,那么可以设置为ture使用原生滚动条</td><td></td><td>false</td></tr>
             <tr><td>sliderMinHeight</td><td>Number</td><td>滚动条的最小高度</td><td></td><td>20</td></tr>
             <tr><td>sliderMaxHeight</td><td>Number</td><td>滚动条的最大高度</td><td></td><td>null</td></tr>
 
@@ -52,7 +98,7 @@
             <tr><td>disableResize</td><td>Boolean</td><td>是否页面resize重置 滚动条 </td><td></td><td>false</td></tr>
             <tr><td>alwaysVisible</td><td>Boolean</td><td>是否总显示 滚动条</td><td></td><td>false</td></tr>
             <tr><td>tabIndex</td><td>Number</td><td>决定中间按钮的宽</td><td></td><td>-1</td></tr>
-           
+
         </tbody>
     </table>
 </body>
